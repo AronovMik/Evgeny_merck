@@ -13,7 +13,11 @@
 
 ## ESC / ESH / AHA / ACC
 
-_(пока пусто)_
+| Файл | Тема | Год | Источник |
+|---|---|---|---|
+| [`ESC_2024_hypertension.md`](./ESC_2024_hypertension.md) | Elevated blood pressure and hypertension | 2024 | ESC, endorsed by ESE и ESO |
+| [`ESC_2024_CCS.md`](./ESC_2024_CCS.md) | Chronic coronary syndromes | 2024 | ESC, endorsed by EACTS |
+| [`ACC-AHA_2023_chronic-coronary-disease.md`](./ACC-AHA_2023_chronic-coronary-disease.md) | Chronic coronary disease | 2023 | AHA/ACC/ACCP/ASPC/NLA/PCNA |
 
 ---
 
