@@ -13,12 +13,29 @@
 
 ## ESC / ESH / AHA / ACC
 
+### Артериальная гипертензия и ИБС
+
 | Файл | Тема | Год | Источник |
 |---|---|---|---|
 | [`ESC_2024_hypertension.md`](./ESC_2024_hypertension.md) | Elevated blood pressure and hypertension | 2024 | ESC, endorsed by ESE и ESO |
 | [`ESC_2024_CCS.md`](./ESC_2024_CCS.md) | Chronic coronary syndromes | 2024 | ESC, endorsed by EACTS |
 | [`ACC-AHA_2023_chronic-coronary-disease.md`](./ACC-AHA_2023_chronic-coronary-disease.md) | Chronic coronary disease | 2023 | AHA/ACC/ACCP/ASPC/NLA/PCNA |
+
+### Дислипидемия
+
+| Файл | Тема | Год | Источник |
+|---|---|---|---|
 | [`ACC-AHA_2026_dyslipidemia.md`](./ACC-AHA_2026_dyslipidemia.md) | Управление дислипидемией | 2026 | ACC/AHA/AACVPR/ABC/ACPM/ADA/AGS/APhA/ASPC/NLA/PCNA; J Am Coll Cardiol. 2026;87(19):2624–2757; doi: 10.1016/j.jacc.2025.11.016; copublished in Circulation |
+
+### Сердечная недостаточность
+
+| Файл | Тема | Год | Источник |
+|---|---|---|---|
+| [`ESC_2021_HF.md`](./ESC_2021_HF.md) | Diagnosis and treatment of acute and chronic heart failure | 2021 | ESC, с участием HFA; основная рамка для ESC-линии по СН |
+| [`ESC_2023_HF-focused-update.md`](./ESC_2023_HF-focused-update.md) | Focused update of the 2021 ESC Guidelines on HF | 2023 | ESC, с участием HFA; обновление по СН2023 (SGLT2 при ВНФВ/СНсФВ, новые исходы) |
+| [`ACC-AHA_2022_HF.md`](./ACC-AHA_2022_HF.md) | Management of Heart Failure | 2022 | AHA/ACC/HFSA Joint Committee; J Am Coll Cardiol. 2022 |
+| [`ACC_2023_HFpEF-consensus.md`](./ACC_2023_HFpEF-consensus.md) | Expert Consensus Decision Pathway on Management of HFpEF | 2023 | ACC Expert Consensus; J Am Coll Cardiol. 2023 |
+| [`ASE_2025_HFpEF-diagnosis.md`](./ASE_2025_HFpEF-diagnosis.md) | HFpEF Diagnosis — Update from the American Society of Echocardiography | 2025 | ASE Guidelines and Standards; обновление по эхокардиографической диагностике СНсФВ |
 
 ---
 
