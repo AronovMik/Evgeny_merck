@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>LLM Council — Кейс 2 Конкор АМ (СД2)</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif; max-width: 920px; margin: 24px auto; padding: 0 20px; color: #1c1c1c; line-height: 1.55; background: #fafafa; }
+  h1 { font-size: 26px; border-bottom: 2px solid #2a3a5c; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 20px; margin-top: 28px; color: #2a3a5c; border-bottom: 1px solid #d0d5dd; padding-bottom: 4px; }
+  h3 { font-size: 16px; margin-top: 18px; color: #344054; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 22px; }
+  .question { background: #f1f4fa; border-left: 4px solid #2a3a5c; padding: 14px 18px; border-radius: 4px; font-size: 14px; }
+  .verdict { background: #fff; border: 1px solid #d0d5dd; border-radius: 8px; padding: 18px 22px; margin: 22px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .verdict h2 { margin-top: 0; border: 0; }
+  .verdict-block { margin-bottom: 14px; }
+  .verdict-block-title { font-weight: 600; color: #2a3a5c; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0 22px; }
+  .stance { padding: 12px; border-radius: 6px; font-size: 13px; text-align: center; border: 1px solid; }
+  .yes { background: #e7f5ed; border-color: #b6dac4; color: #1e6b3a; }
+  .no { background: #fde8e8; border-color: #f4b4b4; color: #93231a; }
+  .cond { background: #fff5dd; border-color: #ecd58a; color: #7a5a08; }
+  .stance-role { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  details { background: #fff; border: 1px solid #e1e4ea; border-radius: 6px; margin-bottom: 10px; padding: 10px 14px; }
+  details summary { cursor: pointer; font-weight: 600; color: #2a3a5c; outline: none; }
+  details[open] summary { margin-bottom: 10px; }
+  details p, details div { font-size: 14px; color: #1c1c1c; white-space: pre-wrap; }
+  .advisor-text { padding-left: 4px; }
+  .footer { color: #666; font-size: 12px; margin-top: 32px; border-top: 1px solid #d0d5dd; padding-top: 10px; }
+  .critical { background:#fde8e8; border-left: 4px solid #c83a30; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  .important { background:#fff5dd; border-left: 4px solid #ecd58a; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  ol li, ul li { margin-bottom: 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 12px 0; }
+  th, td { border: 1px solid #d0d5dd; padding: 6px 10px; text-align: left; }
+  th { background: #f1f4fa; color: #2a3a5c; }
+</style>
+</head>
+<body>
+
+<h1>LLM Council — Кейс 2 Конкор АМ (СД2 / метаболическая нейтральность)</h1>
+<div class="meta">Сессия: 2026-06-05 06:36 · Роли: Кардиолог 1 (за) · Кардиолог 2 (против) · Маркетолог Merck · Инструкция: построчная проверка по принципу №7 + verification pass</div>
+
+<div class="question">
+  <strong>Вопрос на совет.</strong> Принимает ли команда Клинический кейс №2 (пациент 58 лет, мужчина; АГ + стабильная стенокардия ФК II + пост-ИМ ПКА 2023 + HFpEF + СД2 + ХБП С2А2; путь: Конкор Кор 2,5 → Конкор 5 + амлодипин 5 → Конкор 10 → switch на Конкор АМ 10/5) как материал для позиционирования Конкор АМ с акцентом на СД2 / метаболическую нейтральность?
+</div>
+
+<h2>Verification pass (выполнен до совета)</h2>
+<table>
+<tr><th>#</th><th>Проверка</th><th>Результат</th></tr>
+<tr><td>V1</td><td>ОХЛП Конкор Кор</td><td>Показание — только ХСН (без ФВ). Старт у HFpEF формально в показании.</td></tr>
+<tr><td>V2</td><td>ОХЛП Конкор</td><td>АГ + стабильная стенокардия + ХСН — в показаниях.</td></tr>
+<tr><td>V3</td><td>ОХЛП Конкор АМ</td><td>Только АГ. Switch в тех же дозах.</td></tr>
+<tr><td>V4</td><td>CKD-EPI 2009</td><td>62,1 мл/мин/1,73 м² ✓</td></tr>
+<tr><td>V5</td><td>HFA-PEFF</td><td>2+1+2 = 5 → HFpEF ✓</td></tr>
+<tr><td>V6</td><td>КР ХСН-2024 §3.1.9</td><td>Disease-modifying при HFpEF — только иНГЛТ2 (IА).</td></tr>
+<tr><td>V7</td><td>Чесникова 2014</td><td>Подтверждено через slide 50: n=100, открытое, 4 нед, 43% ЧСС 55-60.</td></tr>
+<tr><td>V8</td><td>Verma 2018</td><td>Ретроспективная когорта, n=13 350, АГ ✓</td></tr>
+<tr><td>V9</td><td>Жернакова 2017</td><td>n=30, АГ + <strong>МС (НЕ СД2)</strong>. Перенос на СД2 = экстраполяция.</td></tr>
+<tr><td>V10</td><td>Целевой ЛНП</td><td>1,77 → не достигнут ✓</td></tr>
+<tr><td>V11</td><td>Формат ИБС</td><td>Корректно ✓</td></tr>
+</table>
+
+<h2>Позиции участников</h2>
+<div class="grid">
+  <div class="stance yes"><div class="stance-role">Кардиолог 1</div>ПРИНЯТЬ безоговорочно</div>
+  <div class="stance no"><div class="stance-role">Кардиолог 2</div>НЕ ПРИНИМАТЬ</div>
+  <div class="stance cond"><div class="stance-role">Маркетолог Merck</div>ПРИНЯТЬ с 4 правками</div>
+</div>
+
+<div class="verdict">
+  <h2>Вердикт председателя</h2>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Где совет соглашается.</span> Маршрут A технически валиден по ОХЛП; switch в тех же дозах корректен; HFA-PEFF набран правильно; дапаглифлозин обоснован как disease-modifying при HFpEF.
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Где совет расходится.</span> Голос распределился: A (НЕТ) / B (с 4 правками) / C (без изменений). Peer review единогласно (3/3) — C самое большое слепое пятно: назвал HbA1c 5,6% «жёстким аргументом», Жернакову не оспорил. 2/3 reviewers — B самый сильный; 1/3 — A.
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Слепые пятна peer review.</span>
+    <ul>
+      <li>Интервалы между шагами не указаны.</li>
+      <li>HbA1c 5,6% при активном СД2 — возможная ремиссия (по ВОЗ/ADA HbA1c &lt;6,5% без сахароснижающей = ремиссия).</li>
+      <li>Дозы амлодипина и дапаглифлозина при ХБП С2А2 не оговорены (формально ОК, но молчание).</li>
+    </ul>
+  </div>
+
+  <div class="critical"><strong>КРИТИЧНО — без этого кейс не выходит:</strong>
+    <ol>
+      <li><strong>Жернакова 2017</strong> — ограничить клейм «у пациентов с АГ и МС» + механистическая база β1-селективности; либо удалить пункт USP в текущей форме.</li>
+      <li><strong>HbA1c 5,6% при СД2</strong> — либо изменить на 6,5% (типичный для компенсированного), либо явно прописать «в стадии медикаментозной компенсации».</li>
+    </ol>
+  </div>
+
+  <div class="important"><strong>ВАЖНО — для устойчивости:</strong>
+    <ol start="3">
+      <li>Шаг 2 — переписать атрибуцию: «на фоне комплексной терапии (Конкор 10 + амлодипин 5)».</li>
+      <li>ЧСС 86 на Конкор Кор 2,5 — добавить строку в анамнез: «назначен в стационаре после ИМ 2023; амбулаторная титрация не проводилась».</li>
+      <li>HFpEF-дисклеймер: «ББ для контроля ЧСС и постинфарктной протекции; disease-modifying для ХСНсФВ — только иНГЛТ2».</li>
+      <li>Fair balance: «риск маскировки гипогликемии низкий — дапаглифлозин не вызывает гипогликемии, метформин — низкий потенциал».</li>
+      <li>Интервалы: Шаг 1 — 2–3 нед; Шаг 2 — 3–4 нед; Шаг 3 — после 2–4 нед стабильности.</li>
+    </ol>
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Опционально:</span> ЛНП 1,77 не достигнута — добавить «дальнейшая интенсификация липидоснижающей терапии по решению лечащего врача».
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Сделать первым:</span> Решить Жернакову 2017 + HbA1c 5,6%. Эти два пункта определяют каркас СД2-нарратива; всё остальное косметика рядом с ними.
+  </div>
+</div>
+
+<h2>Ответы участников</h2>
+
+<details>
+  <summary>Кардиолог 1 (за) — ПРИНЯТЬ безоговорочно</summary>
+  <div class="advisor-text">Кейс клинически связный, маршрут обоснован, фокус на СД2-нейтральности востребован. Архетип типичен.
+
+Построчные находки в пользу:
+- АД 155/95, ЧСС 86 на Конкор Кор 2,5 — точка старта убедительная.
+- HFA-PEFF 5 корректен.
+- HbA1c 5,6% — жёсткое обоснование низкого риска; fair balance декоративный.
+- Дапаглифлозин — disease-modifying при HFpEF (IА).
+- Конкор 10 → ЧСС ~58 — Чесникова 2014 подтверждает.
+- Switch на Конкор АМ 10/5 — ОХЛП-валидный.
+
+Итог: принять без изменений.</div>
+</details>
+
+<details>
+  <summary>Кардиолог 2 (против) — НЕ ПРИНЯТЬ (3 структурных дефекта)</summary>
+  <div class="advisor-text">Построчные находки:
+- «ГБ III стадии» без уточнения «цель достигнута/не достигнута» — режет глаз.
+- ЧСС 86 на Конкор Кор 2,5 — не пояснено, почему пациент пришёл с такой ЧСС.
+- HbA1c 5,6% при СД2 — нормогликемия, не «целевая при СД2» (цель &lt;7,0 или &lt;6,5). Либо ремиссия (требует упоминания), либо реальный показатель — тогда disease-modifying роль дапаглифлозина ослабевает.
+- Жернакова 2017 (n=30, МС, НЕ СД2) — экстраполяция недопустима для центрального USP.
+- ЛНП 1,77 при ПИКС+СД2 → цель &lt;1,4 не достигнута; следующий шаг не указан.
+
+FQ-уязвимости: №5 (evidence-claim, главная); №3 (off-label Конкор Кор у HFpEF); №6 (fair balance без источника).
+
+Итог: до устранения Жернаковой, статуса СД2, объяснения ЧСС 86 — не принимать.</div>
+</details>
+
+<details>
+  <summary>Маркетолог Merck — ПРИНЯТЬ с 4 правками</summary>
+  <div class="advisor-text">Регуляторно-маркетинговые находки:
+- Жернакова 2017 — критический риск: МС, не СД2, n=30. Альтернатива: ограничить клейм «у пациентов с МС» + механистические данные β1-селективности.
+- Конкор Кор 2,5 → HFpEF — off-label умеренный; нужен дисклеймер по disease-modifying.
+- Шаг 2: Конкор 5→10 → ФК I — прогностический overclaim: атрибуция дозе при одновременном добавлении амлодипина.
+- ЧСС 55-60 + СД2 — общая форма fair balance; нужен акцент HbA1c 5,6% + иНГЛТ2.
+
+USP №4 (СД2-нейтральность) наиболее уязвим compliance.
+
+4 правки — Жернакова, HFpEF-дисклеймер, разделить атрибуцию, усилить fair balance.</div>
+</details>
+
+<h2>Peer review (A = Кардиолог 2, B = Маркетолог Merck, C = Кардиолог 1)</h2>
+
+<details>
+  <summary>Reviewer 1 — самый сильный B, слепое пятно C, упустили: интервалы</summary>
+  <div class="advisor-text">1. Самый сильный — B. Совмещает клинические находки с регуляторно-маркетинговой логикой. Жернакова — «незащитимая экстраполяция»; идентифицирует overclaim атрибуции ФК II→I; предлагает альтернативу для USP. Вердикт «с правками» операционно полезен.
+
+2. Слепое пятно — C. HbA1c 5,6% — «сильный цифровой аргумент» без вопросов; не замечает, что для СД2 требует объяснения (ремиссия или избыточная сахароснижающая).
+
+3. Упустили все: интервалы между визитами не указаны.</div>
+</details>
+
+<details>
+  <summary>Reviewer 2 — самый сильный B, слепое пятно C, упустили: совместимость HbA1c с СД2</summary>
+  <div class="advisor-text">1. Самый сильный — B. Сбалансированно взвесил находки, точно идентифицировал главные риски, предложил конкретные правки.
+
+2. Слепое пятно — C. Назвал fair balance «декоративным» и «выгодным» — это промоция. Жернакову не заметил вообще.
+
+3. Упустили все: никто не проверил, совместим ли диагноз СД2 с HbA1c 5,6% по критериям ВОЗ/ADA. Если ремиссия — обоснование USP меняется.</div>
+</details>
+
+<details>
+  <summary>Reviewer 3 — самый сильный A, слепое пятно C, упустили: дозы при ХБП + формулировка АГ</summary>
+  <div class="advisor-text">1. Самый сильный — A. Жёсткое НЕТ с обоснованными стоп-факторами: Жернакова, нераскрытый статус СД2, необъяснённая ЧСС 86. Структура «диагноз → порог».
+
+2. Слепое пятно — C. Принял без изменений, проигнорировал недостижение ЛНП &lt;1,4 при ПИКС+СД2.
+
+3. Упустили все: дозы амлодипина и дапаглифлозина при ХБП С2А2 не оговорены. «ГБ III стадии» при достигнутом АД 130/80 на момент switch — формальная пометка по КР МЗ РФ.</div>
+</details>
+
+<div class="footer">
+  Сессия совета: 2026-06-05 06:36. Counciled: Клинический кейс №2 Конкор АМ 10/5 (СД2 / метаболическая нейтральность).
+  Методология: LLM_COUNCIL.md + кастомные роли + построчная проверка (принцип №7) + verification pass.
+  Файл транскрипта: <code>council-transcript-2026-06-05_063606.md</code>.
+</div>
+
+</body>
+</html>
