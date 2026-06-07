@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>LLM Council — Кейс 3 v1.1 → v1.2</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif; max-width: 920px; margin: 24px auto; padding: 0 20px; color: #1c1c1c; line-height: 1.55; background: #fafafa; }
+  h1 { font-size: 26px; border-bottom: 2px solid #2a3a5c; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 20px; margin-top: 28px; color: #2a3a5c; border-bottom: 1px solid #d0d5dd; padding-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 22px; }
+  .question { background: #f1f4fa; border-left: 4px solid #2a3a5c; padding: 14px 18px; border-radius: 4px; font-size: 14px; }
+  .verdict { background: #fff; border: 1px solid #d0d5dd; border-radius: 8px; padding: 18px 22px; margin: 22px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .verdict h2 { margin-top: 0; border: 0; }
+  .verdict-block { margin-bottom: 14px; }
+  .verdict-block-title { font-weight: 600; color: #2a3a5c; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0 22px; }
+  .stance { padding: 12px; border-radius: 6px; font-size: 13px; text-align: center; border: 1px solid; }
+  .yes { background: #e7f5ed; border-color: #b6dac4; color: #1e6b3a; }
+  .cond { background: #fff5dd; border-color: #ecd58a; color: #7a5a08; }
+  .stance-role { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  details { background: #fff; border: 1px solid #e1e4ea; border-radius: 6px; margin-bottom: 10px; padding: 10px 14px; }
+  details summary { cursor: pointer; font-weight: 600; color: #2a3a5c; outline: none; }
+  details[open] summary { margin-bottom: 10px; }
+  details div { font-size: 14px; color: #1c1c1c; white-space: pre-wrap; }
+  .footer { color: #666; font-size: 12px; margin-top: 32px; border-top: 1px solid #d0d5dd; padding-top: 10px; }
+  .applied { background: #e7f5ed; border-left: 4px solid #1e6b3a; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  .skipped { background: #f1f4fa; border-left: 4px solid #2a3a5c; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  ol li, ul li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<h1>LLM Council — Кейс 3 v1.1 → v1.2 (повторный совет)</h1>
+<div class="meta">Сессия: 2026-06-07 16:19 · Принцип №10 + verification pass + построчная проверка · Context-вопрос пропущен (override пользователя)</div>
+
+<div class="question">
+  <strong>Вопрос на совет.</strong> Принимает ли команда v1.1 кейса 3 (после применения 4 пользовательских правок: единый периндоприл 8, удаление DD I, переформулировка С3b, ЧСС 66 как «инструмент для ФК I», бренд-switch явный)?
+</div>
+
+<h2>Позиции участников</h2>
+<div class="grid">
+  <div class="stance yes"><div class="stance-role">Кардиолог 1</div>БЕЗУСЛОВНОЕ ДА</div>
+  <div class="stance cond"><div class="stance-role">Кардиолог 2</div>УСЛОВНОЕ ДА (3 находки)</div>
+  <div class="stance yes"><div class="stance-role">Маркетолог Merck</div>БЕЗУСЛОВНОЕ ДА</div>
+</div>
+
+<div class="verdict">
+  <h2>Вердикт председателя</h2>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Где совет соглашается.</span> v1.1 закрыла все 4 правки предыдущего совета. Critical-блокеров нет. Backing для USP «оригинал» и «когортные данные» через слайды деки v2.0 — для медпред-визита достаточно.
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Peer review.</span> 3/3 reviewers — Кардиолог 2 (А) самый сильный (единственный нашёл новые дефекты). 3/3 — Маркетолог (B) самое большое слепое пятно («ратификация, не рецензия»).
+  </div>
+
+  <div class="applied">
+    <strong>Применено в v1.2 (минорные правки):</strong>
+    <ol>
+      <li><strong>Квалификатор «при обращении»</strong> в заголовок диагноза — снимает риск чтения ФК III как финального статуса (после Шагов 1–2 ФК II → ФК I).</li>
+      <li><strong>Концентрическая ГЛЖ интегрирована в строку ГБ</strong> как «Гипертензивное поражение органов-мишеней» — соответствует структуре диагноза по КР МЗ РФ (ГЛЖ — критерий ПОМ, не самостоятельная нозология).</li>
+    </ol>
+  </div>
+
+  <div class="skipped">
+    <strong>Не применено:</strong>
+    <ul>
+      <li>«Единица А/К не указана» — артефакт сокращённого промпта для advisor; в реальном файле «80 мг/г» уже присутствует.</li>
+    </ul>
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Опциональные (не блокирующие):</span>
+    <ul>
+      <li>ЧСС 66 — желательно «по контрольной ЭКГ» для подтверждения метода (характер ритма по принципу №9 — только ЭКГ).</li>
+      <li>На финальном слайде — явная пометка «55–60 — инструмент для ФК I, не самостоятельный таргет», чтобы аудитория не читала как недостижение цели.</li>
+    </ul>
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Итог.</span> <strong>Кейс 3 ПРИНЯТ.</strong> v1.2 готов к выгрузке в Word.
+  </div>
+</div>
+
+<h2>Ответы участников</h2>
+
+<details>
+  <summary>Кардиолог 1 — БЕЗУСЛОВНОЕ ДА</summary>
+  <div>v1.1 клинически состоятелен.
+- РААС единый (периндоприл 8) — терапия когерентна; выбор оправдан (нефропротективно при А2 + ГБ как причине ХБП).
+- DD I убрана корректно — без верифицирующих эхо-критериев, NT-proBNP не определялся.
+- С3b: ограничение 10 мг — для тяжёлой ХПН (КК &lt;20), при С3b 10 мг допустимо.
+- ЧСС 66 при ФК I — переформулирована корректно; 55–60 — инструмент симптомного контроля.
+- Бренд-switch явный — нарратив прозрачный.
+
+Принимаю.</div>
+</details>
+
+<details>
+  <summary>Кардиолог 2 — УСЛОВНОЕ ДА с 3 находками</summary>
+  <div>Применённые правки закрыты: РААС, DD I, С3b, ЧСС 66, бренд-switch — всё закрыто.
+
+Новые структурные находки:
+1. «Диагноз ИБС ССН ФК III» без временной метки — риск чтения как финального статуса.
+2. «Концентрическая ГЛЖ» отдельной строкой — по КР МЗ РФ это ПОМ, должно быть внутри строки ГБ.
+3. «А/К 80 А2» — единица не указана (артефакт промпта; в файле она есть).
+
+Итог: 3 находки структурно-косметические, не блокируют, но при аудите — уязвимые.</div>
+</details>
+
+<details>
+  <summary>Маркетолог Merck — БЕЗУСЛОВНОЕ ДА</summary>
+  <div>- Off-label-вахта: формулировка С3b привязана к порогу ОХЛП — достаточно.
+- Видимость/уникальность: бренд-switch явный; Конкор АМ 10/10 — единый агент Шага 2.
+- Тоннель внимания: DD I убрана корректно — деталь не работала на позиционирование.
+- Дрейф: кейс заканчивается продуктовым выводом.
+- Backing-слайды деки для «оригинал/когортные» — для медпред-визита достаточно (locked-решение).
+
+Все 4 compliance-блокера v1.0 устранены.</div>
+</details>
+
+<h2>Peer review</h2>
+
+<details>
+  <summary>Reviewer 1 — самый сильный A, слепое пятно B</summary>
+  <div>1. Самый сильный — A. Единственный нашёл новые дефекты, а не подтвердил закрытые. ГЛЖ как отдельная нозология — не косметика, ошибка формулировки.
+2. Слепое пятно — B. «Безусловное ДА» без оговорки — не guardian, ратификация.
+3. Упустили все: ЧСС 66 без указания метода измерения (характер ритма и динамика ЧСС — только по ЭКГ).</div>
+</details>
+
+<details>
+  <summary>Reviewer 2 — самый сильный A, слепые пятна у всех</summary>
+  <div>1. Самый сильный — A. Не «да/нет», а риск-карта с указанием слайда/строки.
+2. Слепые пятна: A не оценил клиническую логику (периндоприл, ЧСС при ФК I); B работал только compliance-сторожем; C не оценил, работает ли каждая деталь на USP.
+3. Упустили все: на финальном слайде нет явной пометки «55–60 — инструмент, не таргет»; без неё аудитория прочтёт как недостижение цели.</div>
+</details>
+
+<details>
+  <summary>Reviewer 3 — самый сильный A, слепое пятно B</summary>
+  <div>1. Самый сильный — A. Новые находки с механизмом ошибки.
+2. Слепое пятно — B. «Off-label чистая» без ссылки на 4.1 ОХЛП — декларация вместо верификации.
+3. Упустили все: операционный консенсус по находкам A; никто не ответил, блокируют ли они приём.</div>
+</details>
+
+<div class="footer">
+  Сессия: 2026-06-07 16:19. Counciled: Клинический кейс 3 v1.1 Конкор АМ. Методология: LLM_COUNCIL.md + принцип №10. Файл транскрипта: <code>council-transcript-2026-06-07_161933.md</code>.
+</div>
+
+</body>
+</html>
