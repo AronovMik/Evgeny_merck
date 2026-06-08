@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>LLM Council — Кейс 3: 2 шага vs 3 шага</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif; max-width: 920px; margin: 24px auto; padding: 0 20px; color: #1c1c1c; line-height: 1.55; background: #fafafa; }
+  h1 { font-size: 26px; border-bottom: 2px solid #2a3a5c; padding-bottom: 10px; margin-bottom: 6px; }
+  h2 { font-size: 20px; margin-top: 28px; color: #2a3a5c; border-bottom: 1px solid #d0d5dd; padding-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 22px; }
+  .question { background: #f1f4fa; border-left: 4px solid #2a3a5c; padding: 14px 18px; border-radius: 4px; font-size: 14px; }
+  .verdict { background: #fff; border: 1px solid #d0d5dd; border-radius: 8px; padding: 18px 22px; margin: 22px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .verdict h2 { margin-top: 0; border: 0; }
+  .verdict-block { margin-bottom: 14px; }
+  .verdict-block-title { font-weight: 600; color: #2a3a5c; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0 22px; }
+  .stance { padding: 12px; border-radius: 6px; font-size: 13px; text-align: center; border: 1px solid; }
+  .yes { background: #e7f5ed; border-color: #b6dac4; color: #1e6b3a; }
+  .no { background: #fde8e8; border-color: #f4b4b4; color: #93231a; }
+  .cond { background: #fff5dd; border-color: #ecd58a; color: #7a5a08; }
+  .stance-role { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  details { background: #fff; border: 1px solid #e1e4ea; border-radius: 6px; margin-bottom: 10px; padding: 10px 14px; }
+  details summary { cursor: pointer; font-weight: 600; color: #2a3a5c; outline: none; }
+  details[open] summary { margin-bottom: 10px; }
+  details div { font-size: 14px; color: #1c1c1c; white-space: pre-wrap; }
+  .footer { color: #666; font-size: 12px; margin-top: 32px; border-top: 1px solid #d0d5dd; padding-top: 10px; }
+  .recommend { background: #e7f5ed; border-left: 4px solid #1e6b3a; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  .alternative { background: #fff5dd; border-left: 4px solid #ecd58a; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  ol li, ul li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<h1>LLM Council — Кейс 3: 2 шага vs 3 шага (структурный вопрос)</h1>
+<div class="meta">Сессия: 2026-06-08 04:58 · Принцип №10 + переиспользованный контекст</div>
+
+<div class="question">
+  <strong>Вопрос на совет.</strong> Реструктурировать ли план лечения в кейсе 3 из 2 шагов в 3, добавив Шаг 0 — переход с бисопролола-дженерика на оригинальный Конкор в той же дозе (5 мг) + амлодипин на утро, демонстрирующий клиническое превосходство оригинала (незначительное снижение ЧСС, уменьшение приступов)? Не усложнит ли это? Не сделает ли надуманной?
+</div>
+
+<h2>Позиции участников</h2>
+<div class="grid">
+  <div class="stance cond"><div class="stance-role">Кардиолог 1</div>B УСЛОВНО</div>
+  <div class="stance yes"><div class="stance-role">Кардиолог 2</div>A</div>
+  <div class="stance yes"><div class="stance-role">Маркетолог Merck</div>A</div>
+</div>
+
+<div class="verdict">
+  <h2>Вердикт председателя</h2>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Где совет соглашается.</span> Биоэквивалентность регуляторно означает одинаковую концентрацию. Видимое различие за несколько дней — либо опровержение биоэквивалентности (требует RCT-backing), либо артефакт. Перенос «оригинал &gt; дженерик» из мастер-слайда (защищённая зона с backing) в тело кейса (case-based без backing) — compliance-наблюдение по ФЗ-38 ст. 24.
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Голос и peer review.</span> 2:1 за A. Peer review единогласно (3/3): Маркетолог — самый сильный; Кардиолог 1 (B условно) — самое большое слепое пятно: «двойной механизм» легитимизирует артефакт, но не снимает регуляторный риск.
+  </div>
+
+  <div class="recommend">
+    <strong>РЕКОМЕНДАЦИЯ — Вариант A (текущий v1.2).</strong>
+    <ul>
+      <li>Бренд-switch остаётся в теле кейса как клиническое решение (замена дженерика на оригинал), но его обоснование делегируется на backing-слайд деки.</li>
+      <li>Тоннель внимания сохраняется на Конкор АМ.</li>
+      <li>Compliance-конструкция не нарушается.</li>
+      <li>Нет «трудных вопросов» от подготовленной аудитории.</li>
+    </ul>
+  </div>
+
+  <div class="alternative">
+    <strong>ОПЦИОНАЛЬНАЯ АЛЬТЕРНАТИВА.</strong> Если хочется 3-шаговую структуру по нарративным причинам — переопределить Шаг 0 через мотивационный контекст:
+    <blockquote style="font-size:13px;border-left:3px solid #999;padding-left:10px;margin:8px 0;">«Шаг 0. Пациентка переведена с бисопролола-дженерика на оригинальный Конкор в той же дозе (5 мг) — для повышения предсказуемости приёма и снятия фактора нерегулярного дозирования как причины псевдорезистентности. На фоне регулярного приёма впервые получены сопоставимые повторные измерения АД и ЧСС.»</blockquote>
+    Это <strong>другой Шаг 0</strong>: не декларирует клиническое превосходство бренда, легитимизирует переключение мотивацией приверженности. Compliance-чисто.
+  </div>
+
+  <div class="verdict-block">
+    <span class="verdict-block-title">Ответы на конкретные вопросы пользователя:</span>
+    <ul>
+      <li><strong>«Не усложнит ли?»</strong> Да — на 50% больше шагов + необходимость объяснять «почему один и тот же бисопролол даёт разный эффект».</li>
+      <li><strong>«Не сделает ли надуманной?»</strong> Да — подготовленный кардиолог немедленно спросит «за счёт чего ЧСС снизилась при подтверждённой биоэквивалентности?» Без RCT-backing ответа нет.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Ответы участников</h2>
+
+<details>
+  <summary>Кардиолог 1 — Вариант B УСЛОВНО</summary>
+  <div>Реалистичность Шага 0 — частично, при оговорках. Биоэквивалентность 80–125%; разброс реален при ХБП С3b. Перевод амло на утро = синхронизация пиков.
+
+Двойной механизм:
+1. Индивидуальная вариабельность биодоступности.
+2. Хронофармакология (амло на утро).
+
+Снижение ЧСС 2–3 уд/мин за несколько дней — физиологически корректно.
+
+Клиническое преимущество над A: дидактическое — Шаг 0 создаёт окно между дженериком и оригиналом, дифференцирующее эффект бренд-свитча от титрования.
+
+Рекомендация: B при явной атрибуции механизма; для терапевтов — A безопаснее.</div>
+</details>
+
+<details>
+  <summary>Кардиолог 2 — Вариант A</summary>
+  <div>Смена бренда при той же дозе не клинически значима. Эффект на ЧСС — от концентрации, не от бренда.
+
+Три неизбежных вопроса:
+1. Чем объясняете снижение ЧСС при той же дозе?
+2. Длительность достаточна для steady state? (t½ 10–12 ч, ss 4–5 дней; пациентка уже в ss на дженерике.)
+3. Реальная практика или конструкция?
+
+Compliance: в A сравнение на мастер-слайде с backing. В B Шаг 0 переносит в тело кейса = case-based без RCT-backing. ФЗ-38 ст. 24 не пройдёт. Перенос compliance-риска в незащищённую зону.
+
+Рекомендация: A. Шаг 0 не пройдёт; компенсация compliance-риска нарративной выгодой отсутствует.</div>
+</details>
+
+<details>
+  <summary>Маркетолог Merck — Вариант A</summary>
+  <div>Off-label-вахта: A = компаниецентричное обобщение с backing, защитимо. B = case-based маркетинговая иллюстрация без RCT-backing; по ФЗ-38 ст. 24 требует исследовательский опор, наблюдение единичного пациента не основание. Compliance-наблюдение по ФЗ-38.
+
+Видимость/уникальность: USP при B эмоционально сильнее, но фрагментируется. Медпред без backing-источника в тексте уязвим.
+
+Тоннель/дрейф: B смещает фокус с «пациентка → FDC» на «оригинал &gt; дженерик, вот доказательство». Конкор АМ — следствие маркетингового тезиса, не клинической проблемы. Продуктовый вывод ослабевает.
+
+Рекомендация: A.</div>
+</details>
+
+<h2>Peer review</h2>
+
+<details>
+  <summary>Reviewer 1 — самый сильный Маркетолог, слепое пятно Кардиолог 1</summary>
+  <div>1. Маркетолог — единственный называет конкретную правовую норму (ФЗ-38 ст. 24) и разграничивает backing-слайд vs case-based иллюстрацию.
+2. Кардиолог 1 — «двойной механизм» научно легитимизирует артефакт, но методологически механизмы не изолируются в кейсе.
+3. Упустили все: Шаг 0 как нарративная ловушка для медпреда (без backing в руках вынужден импровизировать). Никто не предложил Шаг 0 как мотивационный контекст без декларирования превосходства.</div>
+</details>
+
+<details>
+  <summary>Reviewer 2 — самый сильный Маркетолог, слепые пятна у всех</summary>
+  <div>1. Маркетолог — три уровня (регуляторный + маркетинговый + стратегический); диагноз «фрагментация USP» операционен.
+2. Слепые пятна: Кардиолог 2 категоричен (биоэквивалентность популяционна, ХБП С3b меняет ФК); Кардиолог 1 не дифференцирует от «сели-встали»; Маркетолог не рассматривает KOL-аудиторию.
+3. Упустили все: нет данных в репо о реальных различиях биодоступности конкретного дженерика бисопролола на российском рынке.</div>
+</details>
+
+<details>
+  <summary>Reviewer 3 — самый сильный Маркетолог, слепое пятно Кардиолог 1</summary>
+  <div>1. Маркетолог — точная регуляторная механика; перенос из защищённой в незащищённую зону + операционное следствие для медпреда.
+2. Кардиолог 1 — клиническая аргументация без источника = то, что compliance запрещает в теле кейса. «Атрибуция механизма» не снимает риск, а создаёт второй claim.
+3. Упустили все: редакторский вопрос — исчезает ли дидактическая ценность кейса, если бренд-свитч убрать или нейтрализовать?</div>
+</details>
+
+<div class="footer">
+  Сессия: 2026-06-08 04:58. Counciled: структурный вопрос по архитектуре плана лечения в кейсе 3 (2 шага vs 3 шага). Методология: LLM_COUNCIL.md + принцип №10 с переиспользованным контекстом. Файл транскрипта: <code>council-transcript-2026-06-08_045826.md</code>.
+</div>
+
+</body>
+</html>
