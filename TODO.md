@@ -24,7 +24,7 @@
 
 ## Backlog
 
-- [ ] 🟢 По мере накопления добавлять в `context/guidelines/` КР МЗ РФ по ФП и НЖТ 2025 и прочие. Уже загружены: КР МЗ РФ (АГ-2024, стабильная ИБС-2024, ХСН-2024, липиды-2023); ESC 2024 (Hypertension, CCS); AHA/ACC 2023 (Chronic Coronary Disease); ACC/AHA 2026 (дислипидемия); пакет по СН — ESC 2021 HF, ESC 2023 HF focused update, AHA/ACC/HFSA 2022 HF, ACC 2023 HFpEF Consensus, ASE 2025 HFpEF Diagnosis.
+- [ ] 🟢 По мере накопления добавлять в `context/guidelines/` прочие КР МЗ РФ (НЖТ и др.). Уже загружены: КР МЗ РФ (АГ-2024, стабильная ИБС-2024, ХСН-2024, **ФП/ТП-2025**, липиды-2023); ESC 2024 (Hypertension, CCS); AHA/ACC 2023 (Chronic Coronary Disease); ACC/AHA 2026 (дислипидемия); пакет по СН — ESC 2021 HF, ESC 2023 HF focused update, AHA/ACC/HFSA 2022 HF, ACC 2023 HFpEF Consensus, ASE 2025 HFpEF Diagnosis.
 - [x] ~~Сделать MD-конспекты ОХЛП~~ — выполнено: compliance-карточки key-points созданы для всех 4 препаратов + кросс-препаратный PORTFOLIO_CHEATSHEET.md.
 - [ ] 🟢 По мере появления — загрузить инструкции для пациента (PIL), локальные брендовые сообщения, утверждённые сравнения в соответствующие подпапки `context/product-info/`.
 - [ ] 🟢 По мере накопления загрузить в `context/key-studies/` ключевые публикации: CIBIS-II, CIBIS-III и др. — с короткими конспектами по чеклисту Блока 3 INSTRUCTIONS.md.
@@ -44,3 +44,4 @@
 - [x] 2026-05-21 — Загружены ОХЛП (SmPC) по всем препаратам портфеля: Конкор, Конкор АМ, Конкор Кор, Конкор НСТ. `context/product-info/INDEX.md` создан. Портфель в `CLAUDE.md` уточнён: 4 препарата, корректные дозировки, добавлен Конкор Кор.
 - [x] 2026-05-21 — Compliance-карточки key-points сделаны для всех 4 препаратов; добавлен кросс-препаратный `PORTFOLIO_CHEATSHEET.md` (выбор препарата под клинический сценарий + off-label маркировка).
 - [x] 2026-05-21 — Полный пакет международных гайдлайнов по СН в `context/guidelines/`: ESC 2021 HF, ESC 2023 HF focused update, AHA/ACC/HFSA 2022 HF, ACC 2023 HFpEF Consensus, ASE 2025 HFpEF Diagnosis. INDEX перегруппирован по терапевтическим областям.
+- [x] 2026-06-11 — Добавлен КР МЗ РФ по ФП/ТП 2025 (`RKO_2025_atrial-fibrillation-flutter.md`). Закрыт базовый набор МЗ РФ: АГ, стабильная ИБС, ХСН, ФП/ТП.
