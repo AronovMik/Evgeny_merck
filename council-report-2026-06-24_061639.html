@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>LLM Council — Кейс 4 Конкор НСТ 5/6,25</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 920px; margin: 24px auto; padding: 0 20px; color: #1c1c1c; line-height: 1.55; background: #fafafa; }
+  h1 { font-size: 26px; border-bottom: 2px solid #2a3a5c; padding-bottom: 10px; }
+  h2 { font-size: 20px; margin-top: 28px; color: #2a3a5c; border-bottom: 1px solid #d0d5dd; padding-bottom: 4px; }
+  .meta { color: #555; font-size: 13px; margin-bottom: 22px; }
+  .question { background: #f1f4fa; border-left: 4px solid #2a3a5c; padding: 14px 18px; border-radius: 4px; font-size: 14px; }
+  .verdict { background: #fff; border: 1px solid #d0d5dd; border-radius: 8px; padding: 18px 22px; margin: 22px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .verdict h2 { margin-top: 0; border: 0; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0 22px; }
+  .stance { padding: 12px; border-radius: 6px; font-size: 13px; text-align: center; border: 1px solid; }
+  .yes { background: #e7f5ed; border-color: #b6dac4; color: #1e6b3a; }
+  .no { background: #fde8e8; border-color: #f4b4b4; color: #93231a; }
+  .cond { background: #fff5dd; border-color: #ecd58a; color: #7a5a08; }
+  .stance-role { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  details { background: #fff; border: 1px solid #e1e4ea; border-radius: 6px; margin-bottom: 10px; padding: 10px 14px; }
+  details summary { cursor: pointer; font-weight: 600; color: #2a3a5c; }
+  details[open] summary { margin-bottom: 10px; }
+  details div { font-size: 14px; white-space: pre-wrap; }
+  .critical { background: #fde8e8; border-left: 4px solid #c83a30; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  .important { background: #fff5dd; border-left: 4px solid #ecd58a; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  .optional { background: #f1f4fa; border-left: 4px solid #2a3a5c; padding: 8px 14px; border-radius: 4px; font-size: 13px; margin: 8px 0; }
+  .footer { color: #666; font-size: 12px; margin-top: 32px; border-top: 1px solid #d0d5dd; padding-top: 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 12px 0; }
+  th, td { border: 1px solid #d0d5dd; padding: 6px 10px; text-align: left; vertical-align: top; }
+  th { background: #f1f4fa; color: #2a3a5c; }
+</style>
+</head>
+<body>
+
+<h1>LLM Council — Кейс 4 Конкор НСТ 5/6,25</h1>
+<div class="meta">Сессия: 2026-06-24 06:16 · Роли: Кардиолог 1 (защита) · Кардиолог 2 (оппонент) · Маркетолог Merck (guardian) · Принцип №10 + verification pass + построчная проверка</div>
+
+<div class="question">
+  <strong>Вопрос на совет.</strong> Принимает ли команда Клинический кейс №4 — пациентка М., 51 г., перименопауза, дестабилизированная АГ + синусовая тахикардия покоя, одношаговый старт <strong>Конкор НСТ 5/6,25</strong> поверх периндоприла 8 мг — для позиционирования с акцентом на двухосевом контроле (симпатика + объём) и метаболической безопасности дозы 6,25?
+</div>
+
+<h2>Позиции участников</h2>
+<div class="grid">
+  <div class="stance yes"><div class="stance-role">Кардиолог 1</div>ЗА с маркером</div>
+  <div class="stance no"><div class="stance-role">Кардиолог 2</div>НЕ ПРИНЯТЬ (3 уязвимости)</div>
+  <div class="stance cond"><div class="stance-role">Маркетолог Merck</div>НЕ ПРИНЯТЬ — С ПРАВКАМИ</div>
+</div>
+
+<h2>Verification pass</h2>
+<table>
+<tr><th>#</th><th>Объект</th><th>Результат</th></tr>
+<tr><td>V1</td><td>ОХЛП показание / substitution-only</td><td>АГ мягкой/умеренной ✓; substitution-only НЕТ — прямая инициация допустима</td></tr>
+<tr><td>V2</td><td><strong>Стартовая доза по ОХЛП 4.2</strong></td><td><strong>КРИТИЧНО</strong>: начальная 2,5/6,25; 5/6,25 — следующая ступень. Старт сразу 5/6,25 = отклонение от инструкции по дозированию</td></tr>
+<tr><td>V3</td><td>SKU 5/6,25</td><td>В реестре ✓</td></tr>
+<tr><td>V4</td><td>Стратификация</td><td>1 ст. + ПОМ (ГЛЖ) + ≥3 ФР → риск 3 ✓</td></tr>
+<tr><td>V5</td><td>ГЛЖ-порог</td><td>ИММЛЖ 97 > 95 (женщины) ✓ без указания гайдлайна</td></tr>
+<tr><td>V6</td><td>Фридевальд</td><td>5,3 − 1,4 − 1,2/2,2 = 3,355 ≈ 3,4 ✓</td></tr>
+<tr><td>V7–V10</td><td>Внешние ссылки (Peterzan, Bone, Isayeva, Faulkner)</td><td>Первоисточники в репо ОТСУТСТВУЮТ; в деке v2.0 слайдов-доноров нет</td></tr>
+<tr><td>Доп.</td><td>Беременность/лактация</td><td>Абсолютное противопоказание Конкор НСТ. У 51-летней с нерегулярным циклом нужно явно исключить</td></tr>
+</table>
+
+<div class="verdict">
+  <h2>Вердикт председателя</h2>
+
+  <p><strong>Голос:</strong> 1 «за» / 2 «против»/«с правками». <strong>Peer review:</strong> 2 из 3 — Маркетолог самый сильный (compliance + backing + структура); 3 из 3 — Кардиолог 1 самое большое слепое пятно («дельта плаузибельна» без расчёта = нарушение принципа 10(д)).</p>
+
+  <div class="critical">
+    <strong>КРИТИЧНО — без этого кейс не выходит:</strong>
+    <ol>
+      <li><strong>Стартовая доза 5/6,25 vs ОХЛП 2,5/6,25.</strong> Все 3 advisors + 3 reviewers. Решение: либо двухшаговый план (2,5/6,25 → 5/6,25), либо явный off-label-дисклеймер по дозе.</li>
+      <li><strong>Отсутствие статина при ЛНП 3,4 + риск 3</strong> (цель <strong>&lt;1,8</strong> по КР МЗ РФ 2023; Кардиолог 2 ошибочно указал &lt;2,6). Все 3 reviewers. Решение: атор 20–40 мг в план.</li>
+      <li><strong>Backing для USP-источников</strong> (Peterzan, Bone, Isayeva, Faulkner, Schulman) — отсутствует. ФЗ-61 ст. 24. Решение: загрузить в <code>context/key-studies/</code>, смягчить claims или удалить.</li>
+    </ol>
+  </div>
+
+  <div class="important">
+    <strong>ВАЖНО — для устойчивости:</strong>
+    <ol start="4">
+      <li><strong>Дельта АД −27/−12 в 4 нед — overshoot</strong> vs предсказанной 13–20 систолы. Принцип 10(д): механистическое объяснение в тексте или коррекция (двухшаговый план разносит дельты в плаузибельность).</li>
+      <li>Холтер мин. ЧСС 60 → риск ночной брадикардии на бисопрололе 5 мг. В fair balance не отражено.</li>
+      <li>ИММЛЖ-порог 95 у женщин — добавить ссылку на КР МЗ РФ АГ-2024.</li>
+    </ol>
+  </div>
+
+  <div class="optional">
+    <strong>ОПЦИОНАЛЬНОЕ:</strong>
+    <ol start="7">
+      <li>ИМТ 25,7 — переформулировать или опустить (нижняя граница «избытка»).</li>
+      <li>Беременность — одна фраза «исключена».</li>
+      <li>Hb «в норме» одной строкой (для исключения анемии как причины тахикардии).</li>
+    </ol>
+  </div>
+
+  <p><strong>Сделать первым:</strong> двухшаговый план (А) + статин — закрывает 2 из 3 блокирующих одним проходом.</p>
+</div>
+
+<h2>Ответы участников</h2>
+
+<details>
+<summary>Кардиолог 1 — ЗА с маркером</summary>
+<div>Архетип узнаваем. Диагнозы безупречны (риск 3 корректно выведен; формулировка без степени АГ у леченого — по образцу КР). Обоснование ББ через три источника тахикардии + ТТГ 1,9 (исключил тиреотоксикоз) + ФВ 63%/нет асинергии (исключили ХСН/ишемию) → компелирующее показание подтверждено. Отказ от ДГП-БКК клинически обоснован. Дельта −27/−12 «плаузибельна, укладывается в суммированный эффект». Стартовая 5/6,25 — отклонение, но клинически оправдано; требует маркера в тексте: «применяется с учётом клинической картины; ОХЛП рекомендует начало с 2,5/6,25».</div>
+</details>
+
+<details>
+<summary>Кардиолог 2 — НЕ ПРИНЯТЬ (3 уязвимости)</summary>
+<div>Критическая: старт 5/6,25 vs ОХЛП 2,5/6,25 — на медпред-визите неизбежен. Locked «одношаговый старт» не снимает противоречия. Защита через «клиническое обоснование» без ссылки на инструкцию — именно то, что вызывает регуляторные вопросы.
+
+Значимая: ЛНП 3,4 при риске 3 — цель &lt;2,6 (NB: на самом деле &lt;1,8). Статин в плане отсутствует — кардиологи увидят немедленно.
+
+Пограничная: дельта АД −27 систолического превышает ожидаемую 13–20 мм. ГХТ 6,25 даёт 5–8, бисопролол 5 — 8–12. Требует механистического объяснения в тексте.
+
+Плюс: Холтер мин. 60 → риск ночной брадикардии. ИМТ 25,7 = нижняя граница «избытка». Беременность не исключена. 5 вопросов аудитории.</div>
+</details>
+
+<details>
+<summary>Маркетолог Merck — С ПРАВКАМИ — НЕ ПРИНЯТЬ</summary>
+<div>Off-label-вахта: 5/6,25 vs 2,5/6,25 = compliance-риск средний-блокирующий. ФЗ-61 трактует отступление от схемы дозирования как off-label use.
+
+Backing: Peterzan, Bone, Isayeva, Faulkner, Schulman — в репо нет. ФЗ-61 ст. 24 требует верифицированный источник для каждого claim. Bone 2007 ДИ 0,30–0,99 пересекает 1 при округлении — без оговорки = misleading claim.
+
+Видимость/уникальность: УТП «двухосевой контроль + 6,25» сильный и защитимый при закрытии backing-пробела. Замена на конкурента невозможна.
+
+Тоннель: «Дислипидемия в диагнозе» без плана = открытая нитка; «избыток массы» при 25,7 = шум.
+
+Небрежность: ИММЛЖ-порог 95 без гайдлайна-источника; «синус. тахикардия» с точкой; «Дислипидемия IIa» без TG (на самом деле TG 1,2 есть в кейсе — флаг ошибочный).
+
+Блокирующие: (1) доза без дисклеймера; (2) backing для 4 sources. Нерекомендующие: дислипидемия в плане; «избыток массы»; рамка гайдлайна к ИММЛЖ.</div>
+</details>
+
+<h2>Peer review</h2>
+
+<details>
+<summary>Reviewer 1 — самый сильный B, слепое пятно C, упустили все: ошибка цели ЛНП</summary>
+<div>1. B — работает по всем трём осям; структура «блокирующие vs нерекомендующие» операциональна.
+2. C — принял кейс, проигнорировав compliance-риск. Клиническая аргументация ≠ разрешение регуляторного вопроса.
+3. Упустили все: ошибка цели ЛНП у A (&lt;2,6 вместо &lt;1,8). При ЛНП 3,4 и риске 3 отклонение от цели вдвое больше. Ни B, ни C не зафиксировали конкретную цель.</div>
+</details>
+
+<details>
+<summary>Reviewer 2 — самый сильный B, у каждого своё слепое пятно</summary>
+<div>1. B — квалифицировал риски по уровню (средний / блокирующий); разделил compliance от косметики.
+2. Слепые пятна: A — ошибка цели ЛНП (именно тот тип ошибки, который сам должен ловить); B — не оценил клиническую плаузибельность дельты −27; C — заявил «дельта плаузибельна» без обоснования (нарушение принципа 10(д)).
+3. Упустили все: что конкретно сделать с дислипидемией IIa? Статин отсутствует, диагноз стоит — самостоятельный gap в ведении, блокирует приёмку независимо от дозы.</div>
+</details>
+
+<details>
+<summary>Reviewer 3 — самый сильный A, слепое пятно C, упустили все: конкурирующие причины тахикардии</summary>
+<div>1. A — структурировал по весу; поднял ночную брадикардию (Холтер мин. 60) и беременность.
+2. C — «дельта плаузибельна» без расчёта = нарушение принципа 10(д). «Всё хорошо» там, где нужна цифровая верификация.
+3. Упустили все: конкурирующие причины тахикардии (анемия — Hb не упомянут); подагра/мочевая кислота как red flag для тиазидов (хотя в кейсе исходно МК 290 норма — отмечен «как исходный для контроля»).</div>
+</details>
+
+<div class="footer">
+  Сессия: 2026-06-24 06:16. Counciled: Кейс 4 Конкор НСТ 5/6,25. Методология: LLM_COUNCIL.md + принцип №10. Файл транскрипта: <code>council-transcript-2026-06-24_061639.md</code>.
+</div>
+
+</body>
+</html>
