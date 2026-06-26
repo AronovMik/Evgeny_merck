@@ -27,6 +27,7 @@
 | Файл | Тема | Год | Источник |
 |---|---|---|---|
 | [`ACC-AHA_2026_dyslipidemia.md`](./ACC-AHA_2026_dyslipidemia.md) | Управление дислипидемией | 2026 | ACC/AHA/AACVPR/ABC/ACPM/ADA/AGS/APhA/ASPC/NLA/PCNA; J Am Coll Cardiol. 2026;87(19):2624–2757; doi: 10.1016/j.jacc.2025.11.016; copublished in Circulation |
+| [`KDIGO_2013_lipids-in-CKD.pdf`](./KDIGO_2013_lipids-in-CKD.pdf) | Lipid Management in Chronic Kidney Disease | 2013 | KDIGO (Kidney Disease: Improving Global Outcomes); Kidney Int Suppl 2013;3(3):259–305. **Внимание: редакция 2013, частично устаревшая** (есть более поздние KDIGO-документы по липидам/ХБП; при работе сверять); см. Table 4 — рекомендованные дозы статинов при ХБП G3a–G5 |
 
 ### Сердечная недостаточность
 
