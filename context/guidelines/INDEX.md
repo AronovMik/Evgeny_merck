@@ -37,7 +37,7 @@
 | [`ESC_2023_HF-focused-update.md`](./ESC_2023_HF-focused-update.md) | Focused update of the 2021 ESC Guidelines on HF | 2023 | ESC, с участием HFA; обновление по СН2023 (SGLT2 при ВНФВ/СНсФВ, новые исходы) |
 | [`ACC-AHA_2022_HF.md`](./ACC-AHA_2022_HF.md) | Management of Heart Failure | 2022 | AHA/ACC/HFSA Joint Committee; J Am Coll Cardiol. 2022 |
 | [`ACC_2023_HFpEF-consensus.md`](./ACC_2023_HFpEF-consensus.md) | Expert Consensus Decision Pathway on Management of HFpEF | 2023 | ACC Expert Consensus; J Am Coll Cardiol. 2023 |
-| [`ASE_2025_HFpEF-diagnosis.md`](./ASE_2025_HFpEF-diagnosis.md) | HFpEF Diagnosis — Update from the American Society of Echocardiography | 2025 | ASE Guidelines and Standards; обновление по эхокардиографической диагностике СНсФВ |
+| [`ASE_2025_HFpEF-diagnosis.md`](./ASE_2025_HFpEF-diagnosis.md) · [`.pdf`](./ASE_2025_HFpEF-diagnosis.pdf) | HFpEF Diagnosis — Update from the American Society of Echocardiography | 2025 | ASE Guidelines and Standards; обновление по эхокардиографической диагностике СНсФВ. Доступны **оба формата**: MD (greppable) + PDF (оригинал с рисунками/алгоритмами диастолической функции) |
 
 ---
 
