@@ -505,7 +505,7 @@ function renderMarksRail(runId) {
       const confidence = evidence.confidence || {};
       html += `
       <div class="card">
-        <div class="card-title">
+        <div class="card-title card-title-plain">
           <span>${item.n}. ${esc(categoryLabel(item.category))}</span>
           <span class="badge ${severityClass(item.severity)}">${esc(item.severity)}</span>
         </div>

@@ -107,6 +107,7 @@ class Profile:
     checks: str = "default"
     description: str = ""
     logprobs: bool = False  # запрашивать пословную уверенность модели
+    order: int = 100  # порядок в списке; меньше — выше
     truncate_chars: int = 0  # 0 = не обрезать вложенные файлы
     source_sha: str = ""
 
@@ -147,6 +148,7 @@ def load_profile(path: Path) -> Profile:
         checks=str(meta.get("checks") or "default"),
         description=str(meta.get("description") or ""),
         logprobs=bool(meta.get("logprobs") or False),
+        order=int(meta.get("order") or 100),
         truncate_chars=int(meta.get("truncate_chars") or 0),
         source_sha=hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12],
     )
@@ -169,6 +171,7 @@ def list_profiles() -> list[Profile]:
                     path=str(path.relative_to(REPO_ROOT)),
                 )
             )
+    profiles.sort(key=lambda profile: (profile.order, profile.name))
     return profiles
 
 
