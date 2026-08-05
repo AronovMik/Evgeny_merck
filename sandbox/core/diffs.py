@@ -135,8 +135,6 @@ def compare_runs(run_a: dict, run_b: dict) -> dict:
             "checks_passed_after": checks_b.get("passed"),
             "judge_before": (run_a.get("judge") or {}).get("score"),
             "judge_after": (run_b.get("judge") or {}).get("score"),
-            "rating_before": (run_a.get("rating") or {}).get("score"),
-            "rating_after": (run_b.get("rating") or {}).get("score"),
             "prompt_tokens_before": usage_a.get("prompt_tokens"),
             "prompt_tokens_after": usage_b.get("prompt_tokens"),
             "completion_tokens_before": usage_a.get("completion_tokens"),

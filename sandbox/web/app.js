@@ -124,6 +124,7 @@ async function init() {
   await Promise.all([loadProfiles(), loadMeta(), loadSuites()]);
   loadModels();
   wireEvents();
+  applyModelCaps();
 }
 
 async function loadProfiles() {
@@ -153,6 +154,34 @@ async function loadModels() {
     $('model-list').innerHTML = (data.models || [])
       .map((model) => `<option value="${esc(model)}"></option>`).join('');
   } catch { /* список моделей необязателен */ }
+}
+
+/* Модель решает, какие поля имеют смысл. Гасим неподдерживаемые, вместо
+   того чтобы принимать значение и молча снимать его при отправке. */
+async function applyModelCaps() {
+  const profile = currentProfile();
+  const model = $('model-input').value.trim() || (profile && profile.model) || state.config.default_model;
+  let caps;
+  try {
+    caps = await api('/api/model-caps?model=' + encodeURIComponent(model));
+  } catch { return; }
+  state.caps = caps;
+
+  const setEnabled = (id, enabled, why) => {
+    const field = $(id);
+    field.disabled = !enabled;
+    const holder = field.closest('.control') || field.closest('.control-check');
+    if (holder) {
+      holder.classList.toggle('control-off', !enabled);
+      holder.title = enabled ? '' : why;
+    }
+    if (!enabled) field.value = field.type === 'checkbox' ? field.checked : '';
+    if (!enabled && field.type === 'checkbox') field.checked = false;
+  };
+
+  setEnabled('temp-input', caps.temperature, `${model} не принимает temperature — поле отключено`);
+  setEnabled('seed-input', caps.temperature, `${model} не принимает seed — поле отключено`);
+  setEnabled('logprobs-toggle', caps.logprobs, `${model} не отдаёт logprobs — уверенность по фрагменту будет недоступна`);
 }
 
 function currentProfile() {
@@ -997,7 +1026,8 @@ function wireEvents() {
     $('messages').innerHTML = '<div class="empty-state"><p class="dim">Диалог очищен. История для API сброшена.</p></div>';
     renderMarksRail();
   });
-  $('profile-select').addEventListener('change', showProfileNote);
+  $('profile-select').addEventListener('change', () => { showProfileNote(); applyModelCaps(); });
+  $('model-input').addEventListener('change', applyModelCaps);
   $('reload-btn').addEventListener('click', async () => { await loadProfiles(); await loadMeta(); toast('Профили перечитаны'); });
 
   $('preview-btn').addEventListener('click', async () => {

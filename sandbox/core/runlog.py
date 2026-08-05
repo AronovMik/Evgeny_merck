@@ -11,7 +11,7 @@
   * точное тело запроса, ушедшее в API (без ключа);
   * ответ целиком + usage, finish_reason, задержки (TTFB и общая), стоимость,
     какая модель реально ответила, system_fingerprint;
-  * результаты автопроверок и ручная оценка;
+  * результаты автопроверок и замечания разметки;
   * список отклонений от чистого вызова API — пустой список означает, что
     прогон эквивалентен прямому обращению к модели.
 
@@ -94,7 +94,6 @@ def _index_entry(record: dict) -> dict:
         "checks_ok": checks.get("ok"),
         "checks_failed": checks.get("failed"),
         "judge_score": (record.get("judge") or {}).get("score"),
-        "rating": (record.get("rating") or {}).get("score"),
         "annotations_count": len(record.get("annotations") or []),
         "annotation_categories": sorted(
             {item.get("category") for item in (record.get("annotations") or []) if item.get("category")}
@@ -317,15 +316,6 @@ def render_markdown(record: dict) -> str:
             lines.append(f"  - ❗ {issue}")
         for strength in judge.get("strengths") or []:
             lines.append(f"  - ➕ {strength}")
-        lines.append("")
-
-    rating = record.get("rating")
-    if rating:
-        lines.append("## Ручная оценка")
-        lines.append("")
-        lines.append(f"- Балл: **{rating.get('score')}/5**")
-        if rating.get("note"):
-            lines.append(f"- Заметка: {rating['note']}")
         lines.append("")
 
     lines.append("## Вопрос")

@@ -100,6 +100,10 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/models":
                 return self._send_json({"models": llm.list_models()})
 
+            if path == "/api/model-caps":
+                model = query.get("model", [""])[0] or CONFIG.default_model
+                return self._send_json({"model": model, **llm.model_capabilities(model)})
+
             if path == "/api/runs":
                 return self._send_json(
                     runlog.list_runs(
@@ -169,15 +173,6 @@ class Handler(BaseHTTPRequestHandler):
                 return self._handle_preview(body)
             if path == "/api/chat":
                 return self._handle_chat(body)
-            if path.startswith("/api/run/") and path.endswith("/rate"):
-                run_id = path.split("/")[3]
-                record = runlog.update_run(
-                    run_id,
-                    {"rating": {"score": body.get("score"), "note": body.get("note", "")}},
-                )
-                if not record:
-                    return self._send_error_json("Прогон не найден", 404)
-                return self._send_json({"ok": True})
             if path.startswith("/api/run/") and path.endswith("/annotations"):
                 run_id = path.split("/")[3]
                 record = annotations.save_annotations(run_id, body.get("annotations") or [])

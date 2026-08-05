@@ -352,10 +352,6 @@ select { max-width: 280px; }
 .check-fail { border-left: 3px solid var(--critical); }
 .check-warn { border-left: 3px solid var(--warn); }
 
-.rating-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.star-btn { width: 28px; height: 28px; padding: 0; font-size: 13px; }
-.star-on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-
 /* ---------- Таблицы ---------- */
 
 .panel-head {
@@ -566,3 +562,7 @@ code { font-family: var(--font-mono); font-size: .92em; }
   align-items: flex-start;
 }
 .card-title-plain > span:first-child { line-height: 1.35; }
+
+/* Поле, которое выбранная модель не примет: видно, что оно есть, но не работает */
+.control-off { opacity: .4; }
+.control-off > span::after { content: " — не поддерживается"; font-weight: 400; text-transform: none; letter-spacing: 0; }
