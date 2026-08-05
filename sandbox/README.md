@@ -15,6 +15,12 @@ bash sandbox/set-key.sh     # один раз: спросит ключ и зап
 python3 sandbox/app.py
 ```
 
+Если порт 8765 занят другим вашим проектом — задайте свой:
+
+```bash
+python3 sandbox/app.py --port 8790
+```
+
 На Windows вместо первой строки — `sandbox\set-key.bat`.
 
 Ключ вводится скрыто, попадает только в `sandbox/.env` (файл в `.gitignore`,

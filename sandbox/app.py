@@ -327,9 +327,25 @@ def _pick_port(host: str, wanted: int) -> int | None:
     return None
 
 
+def _requested_port() -> int:
+    """Порт из командной строки: --port 8790. Он главнее настройки в .env."""
+    for index, argument in enumerate(sys.argv):
+        if argument == "--port" and index + 1 < len(sys.argv):
+            try:
+                return int(sys.argv[index + 1])
+            except ValueError:
+                break
+        if argument.startswith("--port="):
+            try:
+                return int(argument.split("=", 1)[1])
+            except ValueError:
+                break
+    return CONFIG.port
+
+
 def main() -> None:
     ensure_dirs()
-    port = CONFIG.port
+    port = _requested_port()
 
     # Занятый порт — самая частая заминка при запуске, и стандартный traceback
     # Python про неё ничего не объясняет. Разбираемся сами и говорим по-русски.

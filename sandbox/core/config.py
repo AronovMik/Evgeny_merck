@@ -23,17 +23,26 @@ DEFAULT_BASE_URL = "https://api.openai.com/v1"
 
 
 def _load_env_file(path: Path) -> None:
-    """Загружает KEY=VALUE из .env в os.environ (не перетирая уже заданные)."""
+    """Загружает KEY=VALUE из .env в os.environ.
+
+    Внутри файла побеждает ПОСЛЕДНЯЯ строка с данным ключом: дописать нужное
+    значение в конец файла — самый естественный способ что-то поменять, и он
+    должен работать. Переменные, заданные в самом окружении, остаются главнее
+    файла.
+    """
     if not path.exists():
         return
+    pairs: dict[str, str] = {}
     for raw in path.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, value = line.partition("=")
         key = key.strip()
-        value = value.strip().strip('"').strip("'")
-        if key and key not in os.environ:
+        if key:
+            pairs[key] = value.strip().strip('"').strip("'")
+    for key, value in pairs.items():
+        if key not in os.environ:
             os.environ[key] = value
 
 
