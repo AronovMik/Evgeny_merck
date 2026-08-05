@@ -14,3 +14,7 @@ Thumbs.db
 
 # Локальные настройки Claude Code (могут содержать пользовательские данные)
 .claude/settings.local.json
+
+# Песочница тестирования промптов
+sandbox/.env
+sandbox/logs/

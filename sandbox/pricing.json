@@ -1,0 +1,14 @@
+{
+  "_комментарий": "Цены за 1 млн токенов, USD. НЕ источник истины — сверять с openai.com/pricing и править руками. Если модели здесь нет, стоимость в логе показывается как «не задана», а не как ноль.",
+  "_проверено": "не проверялось — заполните дату после сверки",
+  "gpt-5": { "input": 1.25, "cached_input": 0.125, "output": 10.0 },
+  "gpt-5-mini": { "input": 0.25, "cached_input": 0.025, "output": 2.0 },
+  "gpt-5-nano": { "input": 0.05, "cached_input": 0.005, "output": 0.4 },
+  "gpt-4.1": { "input": 2.0, "cached_input": 0.5, "output": 8.0 },
+  "gpt-4.1-mini": { "input": 0.4, "cached_input": 0.1, "output": 1.6 },
+  "gpt-4.1-nano": { "input": 0.1, "cached_input": 0.025, "output": 0.4 },
+  "gpt-4o": { "input": 2.5, "cached_input": 1.25, "output": 10.0 },
+  "gpt-4o-mini": { "input": 0.15, "cached_input": 0.075, "output": 0.6 },
+  "o3": { "input": 2.0, "cached_input": 0.5, "output": 8.0 },
+  "o4-mini": { "input": 1.1, "cached_input": 0.275, "output": 4.4 }
+}

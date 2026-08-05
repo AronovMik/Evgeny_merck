@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Песочница тестирования промптов</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">◧</span>
+    <span>Песочница тестирования промптов</span>
+  </div>
+  <div class="topbar-right">
+    <span id="mode-badge" class="badge badge-muted">…</span>
+    <span id="api-badge" class="badge badge-muted"></span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab tab-active" data-tab="chat">Чат</button>
+  <button class="tab" data-tab="runs">Прогоны</button>
+  <button class="tab" data-tab="suites">Наборы тестов</button>
+  <button class="tab" data-tab="compare">Сравнение</button>
+</nav>
+
+<!-- ================= ЧАТ ================= -->
+<main id="tab-chat" class="tab-panel tab-panel-active">
+  <section class="chat-column">
+    <div class="controls">
+      <label class="control">
+        <span>Профиль</span>
+        <select id="profile-select"></select>
+      </label>
+      <label class="control">
+        <span>Модель</span>
+        <input id="model-input" list="model-list" placeholder="из профиля">
+        <datalist id="model-list"></datalist>
+      </label>
+      <label class="control control-narrow">
+        <span>Temp</span>
+        <input id="temp-input" type="number" step="0.1" min="0" max="2" placeholder="—">
+      </label>
+      <label class="control control-narrow">
+        <span>Seed</span>
+        <input id="seed-input" type="number" placeholder="—">
+      </label>
+      <label class="control control-check" title="Сохранять предыдущие сообщения в контексте. Для чистого теста лучше выключить.">
+        <input id="history-toggle" type="checkbox">
+        <span>История</span>
+      </label>
+      <button id="preview-btn" class="btn btn-ghost" title="Посмотреть состав промпта без вызова API">Состав промпта</button>
+      <button id="reload-btn" class="btn btn-ghost" title="Перечитать профили с диска">↻ Профили</button>
+    </div>
+
+    <div id="profile-note" class="profile-note"></div>
+
+    <div id="messages" class="messages">
+      <div class="empty-state">
+        <p><strong>Задайте вопрос — он уйдёт в API ровно так, как ушёл бы напрямую.</strong></p>
+        <p>Песочница не добавляет к запросу ни одного собственного слова. Всё, что она всё-таки
+           добавляет (склейка файлов, история диалога, вложенные документы), помечается
+           в логе как отклонение от чистого вызова.</p>
+      </div>
+    </div>
+
+    <div class="composer">
+      <textarea id="input" rows="3" placeholder="Вопрос к модели…   (Ctrl+Enter — отправить)"></textarea>
+      <div class="composer-actions">
+        <button id="send-btn" class="btn btn-primary">Отправить</button>
+        <button id="ab-btn" class="btn" title="Один вопрос через несколько профилей одновременно">A/B по профилям…</button>
+        <button id="clear-btn" class="btn btn-ghost">Очистить</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="log-column">
+    <div class="log-header">
+      <h2>Лог прогона</h2>
+      <span id="run-id-label" class="mono dim"></span>
+    </div>
+    <div id="log-body" class="log-body">
+      <p class="dim">Здесь появится полный разбор запроса: состав промпта пофайлово,
+         отклонения от чистого вызова, токены, стоимость, задержки и результаты автопроверок.</p>
+    </div>
+  </aside>
+</main>
+
+<!-- ================= ПРОГОНЫ ================= -->
+<main id="tab-runs" class="tab-panel">
+  <div class="panel-head">
+    <h2>Журнал прогонов</h2>
+    <div class="panel-head-actions">
+      <select id="runs-filter-profile"><option value="">Все профили</option></select>
+      <label class="control-check"><input id="runs-filter-errors" type="checkbox"><span>Только ошибки</span></label>
+      <button id="runs-refresh" class="btn btn-ghost">↻ Обновить</button>
+      <button id="runs-compare" class="btn" disabled>Сравнить выбранные (0)</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="runs-table" class="grid">
+      <thead>
+        <tr>
+          <th></th><th>Время</th><th>Профиль</th><th>Модель</th><th>Вопрос</th>
+          <th>Промпт sha</th><th>Токены</th><th>$</th><th>мс</th><th>Проверки</th><th>Судья</th><th>Оценка</th><th>Чистота</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div id="run-detail" class="detail-pane"></div>
+</main>
+
+<!-- ================= НАБОРЫ ================= -->
+<main id="tab-suites" class="tab-panel">
+  <div class="panel-head">
+    <h2>Наборы регресс-тестов</h2>
+  </div>
+  <div class="suite-runner">
+    <label class="control">
+      <span>Набор</span>
+      <select id="suite-select"></select>
+    </label>
+    <label class="control">
+      <span>Профиль</span>
+      <select id="suite-profile"></select>
+    </label>
+    <label class="control">
+      <span>Метка прогона</span>
+      <input id="suite-label" placeholder="например: база или после-правки-блок-3">
+    </label>
+    <label class="control-check" title="Дополнительный вызов модели-судьи для каждого ответа. На тестируемый запрос не влияет.">
+      <input id="suite-judge" type="checkbox"><span>Судья</span>
+    </label>
+    <button id="suite-run" class="btn btn-primary">Прогнать набор</button>
+  </div>
+  <div id="suite-progress" class="progress-line"></div>
+  <div id="suite-info" class="suite-info"></div>
+
+  <div class="panel-head">
+    <h3>Сохранённые прогоны набора</h3>
+    <div class="panel-head-actions">
+      <button id="suite-compare-btn" class="btn" disabled>Сравнить выбранные (0)</button>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="suite-results-table" class="grid">
+      <thead><tr><th></th><th>Метка</th><th>Время</th><th>Профиль</th><th>Модель</th><th>Промпт sha</th><th>Пунктов ОК</th><th>Провалов</th><th>Судья ср.</th><th>$</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div id="suite-compare" class="detail-pane"></div>
+</main>
+
+<!-- ================= СРАВНЕНИЕ ================= -->
+<main id="tab-compare" class="tab-panel">
+  <div class="panel-head">
+    <h2>Сравнение двух прогонов</h2>
+    <div class="panel-head-actions">
+      <input id="cmp-a" class="mono" placeholder="ID прогона A (база)">
+      <input id="cmp-b" class="mono" placeholder="ID прогона B (новый)">
+      <button id="cmp-run" class="btn btn-primary">Сравнить</button>
+    </div>
+  </div>
+  <div id="compare-result" class="detail-pane">
+    <p class="dim">Выберите два прогона во вкладке «Прогоны» или введите их ID вручную.
+       Сравнение показывает отдельно, что изменилось на входе (промпт, файлы, параметры)
+       и что изменилось на выходе.</p>
+  </div>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="modal-title">…</h3>
+      <button id="modal-close" class="btn btn-ghost">✕</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
