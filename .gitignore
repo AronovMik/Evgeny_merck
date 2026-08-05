@@ -18,3 +18,7 @@ Thumbs.db
 # Песочница тестирования промптов
 sandbox/.env
 sandbox/logs/
+
+# Скомпилированный байткод Python
+__pycache__/
+*.pyc
