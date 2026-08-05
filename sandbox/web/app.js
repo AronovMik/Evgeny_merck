@@ -161,7 +161,16 @@ function showProfileNote() {
   const files = [...(profile.system_files || []), ...(profile.context_files || [])];
   const bits = [`<span class="mono">${esc(profile.path)}</span> · sha <span class="mono">${esc(profile.source_sha)}</span>`];
   if (files.length) bits.push('файлы: ' + files.map((f) => `<span class="mono">${esc(f)}</span>`).join(', '));
-  $('profile-note').innerHTML = bits.join(' · ');
+
+  // Профиль с невставленным промптом — тест впустую. Молчать об этом нельзя.
+  const placeholder = (profile.system_text || '').includes('ВСТАВЬТЕ СЮДА');
+  const note = $('profile-note');
+  note.classList.toggle('profile-note-alert', placeholder);
+  note.innerHTML = (placeholder
+    ? `<strong>В этом профиле стоит заглушка, а не ваш промпт.</strong> Вставьте текст инструкций
+       ассистента в файл <span class="mono">${esc(profile.path)}</span> (ниже строки <span class="mono">---</span>),
+       затем нажмите ↻. Пока этого нет, вы тестируете не своего агента. · `
+    : '') + bits.join(' · ');
 }
 
 function overrides() {
@@ -799,6 +808,13 @@ function wireEvents() {
   });
 
   document.addEventListener('click', (event) => {
+    const starter = event.target.closest('[data-starter]');
+    if (starter) {
+      $('input').value = starter.dataset.starter;
+      $('input').focus();
+      return;
+    }
+
     const probe = event.target.closest('[data-probe]');
     if (probe) return runProbe(probe.dataset.probe, probe.dataset.run, Number(probe.dataset.index));
 
