@@ -161,7 +161,22 @@ def build_evidence(record: dict, annotation: dict) -> dict:
         for block in prompt.get("blocks") or []
     ]
 
+    # 5. Уверенность модели именно на этом фрагменте — окно в процесс генерации.
+    confidence = span_confidence(response, annotation.get("start"), annotation.get("end"))
+
     notes: list[str] = []
+    if confidence.get("available"):
+        mean_probability = confidence["mean_probability"]
+        if mean_probability < 0.55:
+            notes.append(
+                f"На этом фрагменте модель была не уверена: средняя вероятность токена "
+                f"{mean_probability:.2f} против {confidence['answer_mean_probability']:.2f} по ответу целиком."
+            )
+        elif mean_probability > 0.9:
+            notes.append(
+                f"Фрагмент выдан уверенно (средняя вероятность {mean_probability:.2f}). "
+                "Уверенная ошибка правится промптом или контекстом, а не температурой."
+            )
     if truncated:
         notes.append(
             "Ответ оборван по лимиту токенов (finish_reason=length) — неполнота может объясняться этим, а не промптом."
@@ -201,7 +216,68 @@ def build_evidence(record: dict, annotation: dict) -> dict:
         "terms_missing_from_prompt": missing,
         "position_percent": position,
         "answer_chars": len(answer),
+        "confidence": confidence,
         "facts": notes,
+    }
+
+
+def span_confidence(response: dict, start, end) -> dict:
+    """Пословная уверенность модели на выделенном фрагменте.
+
+    Единственное, что API показывает о самом процессе генерации: вероятность
+    каждого выданного токена. Токены сопоставляются с символьными границами
+    выделения накопительной длиной — тот же порядок, в каком они пришли.
+    Если модель не отдала logprobs, честно возвращается available=False.
+    """
+    tokens = response.get("tokens") or []
+    logprobs = response.get("logprobs") or []
+    if not tokens or not logprobs or len(tokens) != len(logprobs):
+        return {"available": False, "reason": "модель не вернула logprobs для этого прогона"}
+
+    import math
+
+    probabilities = [math.exp(value) for value in logprobs]
+    answer_mean = sum(probabilities) / len(probabilities)
+
+    if not isinstance(start, int) or not isinstance(end, int) or end <= start:
+        return {
+            "available": True,
+            "span": False,
+            "answer_mean_probability": round(answer_mean, 4),
+            "mean_probability": round(answer_mean, 4),
+        }
+
+    span_indexes: list[int] = []
+    cursor = 0
+    for index, token in enumerate(tokens):
+        token_start = cursor
+        cursor += len(token)
+        if token_start < end and cursor > start:
+            span_indexes.append(index)
+
+    if not span_indexes:
+        return {
+            "available": True,
+            "span": False,
+            "answer_mean_probability": round(answer_mean, 4),
+            "mean_probability": round(answer_mean, 4),
+            "reason": "не удалось сопоставить выделение с токенами",
+        }
+
+    span_probabilities = [probabilities[index] for index in span_indexes]
+    weakest = sorted(span_indexes, key=lambda index: probabilities[index])[:5]
+
+    return {
+        "available": True,
+        "span": True,
+        "tokens_in_span": len(span_indexes),
+        "mean_probability": round(sum(span_probabilities) / len(span_probabilities), 4),
+        "min_probability": round(min(span_probabilities), 4),
+        "low_confidence_tokens": len([p for p in span_probabilities if p < 0.5]),
+        "answer_mean_probability": round(answer_mean, 4),
+        "weakest_tokens": [
+            {"token": tokens[index], "probability": round(probabilities[index], 4)} for index in weakest
+        ],
     }
 
 

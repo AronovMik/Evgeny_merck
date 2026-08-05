@@ -95,6 +95,10 @@ def _index_entry(record: dict) -> dict:
         "checks_failed": checks.get("failed"),
         "judge_score": (record.get("judge") or {}).get("score"),
         "rating": (record.get("rating") or {}).get("score"),
+        "annotations_count": len(record.get("annotations") or []),
+        "annotation_categories": sorted(
+            {item.get("category") for item in (record.get("annotations") or []) if item.get("category")}
+        ),
         "deviations": len(prompt.get("deviations") or []),
         "clean": not (prompt.get("deviations") or []),
         "mock": record.get("mock", False),

@@ -21,7 +21,7 @@ from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from core import diffs, llm, profiles, runlog, runner, suites  # noqa: E402
+from core import annotations, diffs, llm, probes, profiles, runlog, runner, suites  # noqa: E402
 from core.config import CONFIG, WEB_DIR, ensure_dirs  # noqa: E402
 
 
@@ -56,10 +56,14 @@ class Handler(BaseHTTPRequestHandler):
             return {}
 
     def _start_sse(self) -> None:
+        # Connection: close обязателен. Длина тела заранее неизвестна, поэтому
+        # признаком конца потока служит закрытие сокета: без него читатель на
+        # стороне браузера никогда не дождётся завершения запроса.
+        self.close_connection = True
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream; charset=utf-8")
         self.send_header("Cache-Control", "no-cache")
-        self.send_header("Connection", "keep-alive")
+        self.send_header("Connection", "close")
         self.send_header("X-Accel-Buffering", "no")
         self.end_headers()
 
@@ -121,6 +125,12 @@ class Handler(BaseHTTPRequestHandler):
                     {"a": _run_head(run_a), "b": _run_head(run_b), "diff": diffs.compare_runs(run_a, run_b)}
                 )
 
+            if path == "/api/annotation-meta":
+                return self._send_json(annotations.load_categories())
+
+            if path == "/api/annotations":
+                return self._send_json(annotations.aggregate())
+
             if path == "/api/suites":
                 return self._send_json([s.to_dict() for s in suites.list_suites()])
 
@@ -168,6 +178,41 @@ class Handler(BaseHTTPRequestHandler):
                 if not record:
                     return self._send_error_json("Прогон не найден", 404)
                 return self._send_json({"ok": True})
+            if path.startswith("/api/run/") and path.endswith("/annotations"):
+                run_id = path.split("/")[3]
+                record = annotations.save_annotations(run_id, body.get("annotations") or [])
+                if not record:
+                    return self._send_error_json("Прогон не найден", 404)
+                return self._send_json(
+                    {
+                        "ok": True,
+                        "annotations": record.get("annotations", []),
+                        "summary": record.get("annotations_summary", {}),
+                    }
+                )
+
+            if path == "/api/annotations/digest":
+                return self._send_json({"path": str(annotations.write_digest())})
+
+            if path == "/api/probe/stability":
+                return self._send_json(
+                    probes.stability_probe(
+                        body.get("run_id", ""),
+                        repeats=int(body.get("repeats") or 5),
+                        annotation_index=body.get("annotation_index"),
+                        terms=body.get("terms"),
+                    )
+                )
+
+            if path == "/api/probe/ablation":
+                return self._send_json(
+                    probes.ablation_probe(
+                        body.get("run_id", ""),
+                        annotation_index=body.get("annotation_index"),
+                        terms=body.get("terms"),
+                    )
+                )
+
             if path == "/api/suite/run":
                 return self._handle_suite_run(body)
 

@@ -26,24 +26,34 @@ def load_pricing() -> dict:
     return {k: v for k, v in data.items() if not k.startswith("_")}
 
 
-def _match_model(model: str, table: dict) -> dict | None:
+def _matched_key(model: str, table: dict) -> str | None:
+    """Ищет тариф для модели.
+
+    Префикс засчитывается только если дальше идёт дефис: `gpt-5-2026-01-01`
+    и `gpt-5-mini` — это варианты gpt-5 и тарифицируются по нему. А вот
+    `gpt-5.5` по gpt-5 НЕ тарифицируется: точка означает другую версию модели
+    с другим прайсом. Иначе в отчёт попала бы правдоподобная, но выдуманная
+    цифра — а это хуже честного «цена не задана».
+    """
     if not model:
         return None
     if model in table:
-        return table[model]
-    # gpt-5-2026-01-01 -> gpt-5 : ищем самый длинный префикс
-    candidates = [key for key in table if model.startswith(key)]
-    if candidates:
-        return table[max(candidates, key=len)]
-    return None
+        return model
+    candidates = [key for key in table if model.startswith(key) and model[len(key):].startswith("-")]
+    return max(candidates, key=len) if candidates else None
 
 
 def estimate_cost(model: str, usage: dict | None) -> dict:
     """Возвращает разбивку стоимости в долларах или {'known': False}."""
     table = load_pricing()
-    rates = _match_model(model, table)
-    if not rates or not usage:
-        return {"known": False, "model_matched": None}
+    matched = _matched_key(model, table)
+    rates = table.get(matched) if matched else None
+    if not rates or not isinstance(rates, dict) or not usage:
+        return {
+            "known": False,
+            "model_matched": None,
+            "note": f"тариф для «{model}» не задан в pricing.json",
+        }
 
     prompt_tokens = int(usage.get("prompt_tokens") or 0)
     completion_tokens = int(usage.get("completion_tokens") or 0)
@@ -61,7 +71,7 @@ def estimate_cost(model: str, usage: dict | None) -> dict:
 
     return {
         "known": True,
-        "model_matched": next((k for k in table if model.startswith(k)), model),
+        "model_matched": matched,
         "currency": "USD",
         "input": round(input_cost, 6),
         "cached_input": round(cached_cost, 6),

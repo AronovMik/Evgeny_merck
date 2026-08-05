@@ -40,6 +40,7 @@ def prepare(
     max_tokens = overrides.get("max_tokens", profile.max_tokens)
     seed = overrides.get("seed", profile.seed)
     reasoning_effort = overrides.get("reasoning_effort", profile.reasoning_effort)
+    want_logprobs = bool(overrides.get("logprobs", profile.logprobs))
 
     body, adaptations = llm.build_request_body(
         model,
@@ -50,6 +51,7 @@ def prepare(
         reasoning_effort=reasoning_effort or "",
         seed=seed,
         stream=stream,
+        logprobs=want_logprobs,
     )
 
     deviations = [dev.to_dict() for dev in built.deviations]
@@ -102,6 +104,7 @@ def prepare(
             "max_tokens": max_tokens,
             "seed": seed,
             "reasoning_effort": reasoning_effort,
+            "logprobs": want_logprobs,
             "base_url": CONFIG.base_url,
             "stream": stream,
         },
@@ -129,7 +132,9 @@ def finalize(
     check_results = checks_mod.run_checks(result.text, all_checks, check_set)
 
     usage = result.usage or {}
-    if usage.get("prompt_tokens"):
+    # Калибровка счётчика токенов идёт только по настоящим ответам API:
+    # выдуманные mock-цифры испортили бы оценку для реальных прогонов.
+    if usage.get("prompt_tokens") and not record.get("mock"):
         tokens.record_actual(
             record["request"]["model"],
             record["prompt"].get("estimated_prompt_tokens") or 0,

@@ -16,17 +16,19 @@
   <div class="topbar-right">
     <span id="mode-badge" class="badge badge-muted">…</span>
     <span id="api-badge" class="badge badge-muted"></span>
+    <button id="theme-toggle" class="btn btn-ghost btn-sm" title="Светлая / тёмная тема">◐</button>
   </div>
 </header>
 
 <nav class="tabs">
-  <button class="tab tab-active" data-tab="chat">Чат</button>
+  <button class="tab tab-active" data-tab="chat">Чат и разметка</button>
+  <button class="tab" data-tab="findings">Замечания</button>
   <button class="tab" data-tab="runs">Прогоны</button>
   <button class="tab" data-tab="suites">Наборы тестов</button>
   <button class="tab" data-tab="compare">Сравнение</button>
 </nav>
 
-<!-- ================= ЧАТ ================= -->
+<!-- ================= ЧАТ И РАЗМЕТКА ================= -->
 <main id="tab-chat" class="tab-panel tab-panel-active">
   <section class="chat-column">
     <div class="controls">
@@ -47,45 +49,73 @@
         <span>Seed</span>
         <input id="seed-input" type="number" placeholder="—">
       </label>
-      <label class="control control-check" title="Сохранять предыдущие сообщения в контексте. Для чистого теста лучше выключить.">
-        <input id="history-toggle" type="checkbox">
+      <label class="control-check" title="Сохранять предыдущие сообщения в контексте. Нужно для цикла «случай → разбор → эталон».">
+        <input id="history-toggle" type="checkbox" checked>
         <span>История</span>
       </label>
-      <button id="preview-btn" class="btn btn-ghost" title="Посмотреть состав промпта без вызова API">Состав промпта</button>
-      <button id="reload-btn" class="btn btn-ghost" title="Перечитать профили с диска">↻ Профили</button>
+      <label class="control-check" title="Запрашивать пословную уверенность модели. Поддерживается не всеми моделями.">
+        <input id="logprobs-toggle" type="checkbox">
+        <span>logprobs</span>
+      </label>
+      <button id="preview-btn" class="btn btn-ghost" title="Состав промпта без вызова API">Состав промпта</button>
+      <button id="reload-btn" class="btn btn-ghost" title="Перечитать профили с диска">↻</button>
     </div>
 
     <div id="profile-note" class="profile-note"></div>
 
     <div id="messages" class="messages">
       <div class="empty-state">
-        <p><strong>Задайте вопрос — он уйдёт в API ровно так, как ушёл бы напрямую.</strong></p>
-        <p>Песочница не добавляет к запросу ни одного собственного слова. Всё, что она всё-таки
-           добавляет (склейка файлов, история диалога, вложенные документы), помечается
-           в логе как отклонение от чистого вызова.</p>
+        <p><strong>Обычный чат — как работа с агентом.</strong> Запрос уходит в API ровно так,
+           как ушёл бы напрямую: система + сообщения, без добавленных песочницей слов.</p>
+        <p><strong>Разметка.</strong> В любом ответе выделите мышью фрагмент — откроется форма
+           замечания: часть ответа, категория ошибки, комментарий. Замечание пишется в лог
+           вместе с доказательной базой: было ли это в промпте, уверенно ли модель это выдала,
+           не оборван ли ответ.</p>
+        <p><strong>Причина, а не догадка.</strong> По каждому замечанию доступны две пробы:
+           повтор N раз (устойчиво или случайно) и абляция (исчезает ли ошибка без конкретного
+           файла промпта).</p>
       </div>
     </div>
 
     <div class="composer">
-      <textarea id="input" rows="3" placeholder="Вопрос к модели…   (Ctrl+Enter — отправить)"></textarea>
+      <textarea id="input" rows="3" placeholder="Сообщение агенту…   (Ctrl+Enter — отправить)"></textarea>
       <div class="composer-actions">
         <button id="send-btn" class="btn btn-primary">Отправить</button>
-        <button id="ab-btn" class="btn" title="Один вопрос через несколько профилей одновременно">A/B по профилям…</button>
-        <button id="clear-btn" class="btn btn-ghost">Очистить</button>
+        <button id="ab-btn" class="btn" title="Один вопрос через несколько профилей сразу">A/B по профилям…</button>
+        <button id="clear-btn" class="btn btn-ghost">Очистить диалог</button>
       </div>
     </div>
   </section>
 
   <aside class="log-column">
+    <div class="rail-switch">
+      <button class="seg seg-active" data-rail="marks">Разметка</button>
+      <button class="seg" data-rail="log">Лог прогона</button>
+    </div>
     <div class="log-header">
-      <h2>Лог прогона</h2>
+      <h2 id="rail-title">Замечания к ответу</h2>
       <span id="run-id-label" class="mono dim"></span>
     </div>
-    <div id="log-body" class="log-body">
-      <p class="dim">Здесь появится полный разбор запроса: состав промпта пофайлово,
-         отклонения от чистого вызова, токены, стоимость, задержки и результаты автопроверок.</p>
+    <div id="rail-marks" class="log-body">
+      <p class="dim">Выделите фрагмент в ответе модели, чтобы поставить замечание.</p>
+    </div>
+    <div id="rail-log" class="log-body hidden">
+      <p class="dim">Здесь появится разбор запроса: состав промпта пофайлово, отклонения от
+         чистого вызова, токены, стоимость, задержки, автопроверки.</p>
     </div>
   </aside>
+</main>
+
+<!-- ================= ЗАМЕЧАНИЯ ================= -->
+<main id="tab-findings" class="tab-panel">
+  <div class="panel-head">
+    <h2>Накопленные замечания</h2>
+    <div class="panel-head-actions">
+      <button id="findings-refresh" class="btn btn-ghost">↻ Обновить</button>
+      <button id="findings-digest" class="btn">Собрать сводку для Claude Code</button>
+    </div>
+  </div>
+  <div id="findings-body" class="detail-pane"></div>
 </main>
 
 <!-- ================= ПРОГОНЫ ================= -->
@@ -104,7 +134,7 @@
       <thead>
         <tr>
           <th></th><th>Время</th><th>Профиль</th><th>Модель</th><th>Вопрос</th>
-          <th>Промпт sha</th><th>Токены</th><th>$</th><th>мс</th><th>Проверки</th><th>Судья</th><th>Оценка</th><th>Чистота</th>
+          <th>Промпт sha</th><th>Токены</th><th>$</th><th>мс</th><th>Проверки</th><th>Замечаний</th><th>Чистота</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -131,7 +161,7 @@
       <span>Метка прогона</span>
       <input id="suite-label" placeholder="например: база или после-правки-блок-3">
     </label>
-    <label class="control-check" title="Дополнительный вызов модели-судьи для каждого ответа. На тестируемый запрос не влияет.">
+    <label class="control-check" title="Дополнительный вызов модели-судьи. На тестируемый запрос не влияет.">
       <input id="suite-judge" type="checkbox"><span>Судья</span>
     </label>
     <button id="suite-run" class="btn btn-primary">Прогнать набор</button>
@@ -166,10 +196,36 @@
   </div>
   <div id="compare-result" class="detail-pane">
     <p class="dim">Выберите два прогона во вкладке «Прогоны» или введите их ID вручную.
-       Сравнение показывает отдельно, что изменилось на входе (промпт, файлы, параметры)
-       и что изменилось на выходе.</p>
+       Сравнение отдельно показывает, что изменилось на входе и что изменилось на выходе.</p>
   </div>
 </main>
+
+<!-- Форма замечания, всплывает у выделения -->
+<div id="annot-pop" class="annot-pop hidden">
+  <div class="annot-quote" id="annot-quote"></div>
+  <div class="annot-grid">
+    <label class="control">
+      <span>Часть ответа</span>
+      <select id="annot-part"></select>
+    </label>
+    <label class="control">
+      <span>Важность</span>
+      <select id="annot-severity"></select>
+    </label>
+  </div>
+  <label class="control">
+    <span>Категория ошибки</span>
+    <select id="annot-category"></select>
+  </label>
+  <label class="control">
+    <span>Что именно не так</span>
+    <textarea id="annot-comment" rows="3" placeholder="Например: доза указана верно, но показание не соответствует разделу 4.1 ОХЛП"></textarea>
+  </label>
+  <div class="annot-actions">
+    <button id="annot-save" class="btn btn-primary btn-sm">Сохранить замечание</button>
+    <button id="annot-cancel" class="btn btn-ghost btn-sm">Отмена</button>
+  </div>
+</div>
 
 <div id="modal" class="modal hidden">
   <div class="modal-card">
@@ -180,6 +236,8 @@
     <div id="modal-body" class="modal-body"></div>
   </div>
 </div>
+
+<div id="toast" class="toast hidden"></div>
 
 <script src="/static/app.js"></script>
 </body>

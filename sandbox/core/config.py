@@ -52,7 +52,7 @@ class Config:
         self.organization: str = os.environ.get("OPENAI_ORG_ID", "").strip()
         self.host: str = os.environ.get("SANDBOX_HOST", "127.0.0.1").strip()
         self.port: int = int(os.environ.get("SANDBOX_PORT", "8765"))
-        self.default_model: str = os.environ.get("SANDBOX_DEFAULT_MODEL", "gpt-5").strip()
+        self.default_model: str = os.environ.get("SANDBOX_DEFAULT_MODEL", "gpt-5.5").strip()
         self.request_timeout: int = int(os.environ.get("SANDBOX_TIMEOUT", "600"))
         self.max_retries: int = int(os.environ.get("SANDBOX_MAX_RETRIES", "4"))
         # Жёсткий предел на размер собранного системного промпта (в токенах-оценках).

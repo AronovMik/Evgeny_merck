@@ -18,20 +18,48 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 
-from .config import CONFIG
+from .config import CONFIG, SANDBOX_DIR
 
-# Семейства с reasoning: не принимают temperature/top_p и требуют
-# max_completion_tokens вместо max_tokens.
-_REASONING_PREFIXES = ("gpt-5", "o1", "o3", "o4", "gpt-6")
+_MODELS_PATH = SANDBOX_DIR / "models.json"
+
+# Запасные значения, если models.json отсутствует или битый.
+_FALLBACK_REASONING_PREFIXES = ("gpt-5", "gpt-6", "o1", "o3", "o4")
+
+
+def model_capabilities(model: str) -> dict:
+    """Возможности модели из редактируемого models.json (самый длинный префикс)."""
+    defaults = {
+        "reasoning": any(model.startswith(prefix) for prefix in _FALLBACK_REASONING_PREFIXES),
+        "temperature": not any(model.startswith(prefix) for prefix in _FALLBACK_REASONING_PREFIXES),
+        "logprobs": True,
+    }
+    if not _MODELS_PATH.exists() or not model:
+        return defaults
+    try:
+        table = json.loads(_MODELS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return defaults
+
+    matches = [key for key in table if not key.startswith("_") and model.startswith(key)]
+    if not matches:
+        return defaults
+    entry = table[max(matches, key=len)]
+    return {
+        "reasoning": bool(entry.get("reasoning", defaults["reasoning"])),
+        "temperature": bool(entry.get("temperature", defaults["temperature"])),
+        "logprobs": bool(entry.get("logprobs", defaults["logprobs"])),
+    }
 
 
 def is_reasoning_model(model: str) -> bool:
-    return any(model.startswith(prefix) for prefix in _REASONING_PREFIXES)
+    return model_capabilities(model)["reasoning"]
 
 
 @dataclass
 class LLMResult:
     text: str = ""
+    tokens: list[str] = field(default_factory=list)
+    logprobs: list[float] = field(default_factory=list)
     usage: dict = field(default_factory=dict)
     finish_reason: str = ""
     model_returned: str = ""
@@ -49,6 +77,9 @@ class LLMResult:
     def to_dict(self) -> dict:
         return {
             "text": self.text,
+            # Пословная уверенность модели. Пусто, если модель не отдаёт logprobs.
+            "tokens": self.tokens,
+            "logprobs": self.logprobs,
             "usage": self.usage,
             "finish_reason": self.finish_reason,
             "model_returned": self.model_returned,
@@ -74,30 +105,44 @@ def build_request_body(
     reasoning_effort: str = "",
     seed: int | None = None,
     stream: bool = True,
+    logprobs: bool = False,
 ) -> tuple[dict, list[dict]]:
     """Собирает тело запроса. Возвращает (body, adaptations)."""
     body: dict = {"model": model, "messages": messages}
     adaptations: list[dict] = []
 
-    reasoning = is_reasoning_model(model)
+    # logprobs — единственное окно в процесс генерации, которое отдаёт API:
+    # вероятность каждого выданного токена. Поддержка зависит от модели;
+    # если модель откажет, параметр снимется и это попадёт в лог.
+    if logprobs:
+        body["logprobs"] = True
+        body["top_logprobs"] = 1
+
+    caps = model_capabilities(model)
+    reasoning = caps["reasoning"]
 
     if temperature is not None:
-        if reasoning:
+        if not caps["temperature"]:
             adaptations.append(
                 {
                     "code": "param_dropped",
                     "param": "temperature",
                     "value": temperature,
-                    "reason": f"{model} — reasoning-модель, temperature не поддерживается",
+                    "reason": f"по models.json {model} не принимает temperature",
                 }
             )
         else:
             body["temperature"] = temperature
 
     if top_p is not None:
-        if reasoning:
+        if not caps["temperature"]:
             adaptations.append(
-                {"code": "param_dropped", "param": "top_p", "value": top_p, "reason": "reasoning-модель"}
+                {
+                    "code": "param_dropped",
+                    "param": "top_p",
+                    "value": top_p,
+                    "reason": f"по models.json {model} не принимает top_p",
+                }
             )
         else:
             body["top_p"] = top_p
@@ -213,6 +258,9 @@ def stream_completion(body: dict, adaptations: list[dict]):
                         if delta:
                             buffer += delta
                             yield "delta", delta
+                        for entry in ((choice.get("logprobs") or {}).get("content") or []):
+                            result.tokens.append(entry.get("token", ""))
+                            result.logprobs.append(round(float(entry.get("logprob", 0.0)), 4))
                         if choice.get("finish_reason"):
                             result.finish_reason = choice["finish_reason"]
 
@@ -291,8 +339,22 @@ def mock_completion(body: dict, adaptations: list[dict]):
         "Источники: ОХЛП Конкор (см. context/product-info/), КР МЗ РФ."
     )
 
+    # Псевдо-logprobs: детерминированные, чтобы проверять отображение уверенности.
+    mock_tokens: list[str] = []
+    mock_logprobs: list[float] = []
+    if body.get("logprobs"):
+        cursor = 0
+        for word in re.findall(r"\S+\s*", reply):
+            mock_tokens.append(word)
+            # Слова с цифрами и латиницей «менее уверенные» — видно на глаз.
+            penalty = 0.9 if re.search(r"\d|[A-Za-z]", word) else 0.05
+            mock_logprobs.append(round(-0.02 - penalty * ((cursor % 7) / 7), 4))
+            cursor += 1
+
     result = LLMResult(
         text=reply,
+        tokens=mock_tokens,
+        logprobs=mock_logprobs,
         usage={
             "prompt_tokens": max(1, len(system_text) // 3),
             "completion_tokens": max(1, len(reply) // 3),

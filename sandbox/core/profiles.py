@@ -106,6 +106,7 @@ class Profile:
     system_text: str = ""
     checks: str = "default"
     description: str = ""
+    logprobs: bool = False  # запрашивать пословную уверенность модели
     truncate_chars: int = 0  # 0 = не обрезать вложенные файлы
     source_sha: str = ""
 
@@ -145,6 +146,7 @@ def load_profile(path: Path) -> Profile:
         system_text=body,
         checks=str(meta.get("checks") or "default"),
         description=str(meta.get("description") or ""),
+        logprobs=bool(meta.get("logprobs") or False),
         truncate_chars=int(meta.get("truncate_chars") or 0),
         source_sha=hashlib.sha256(raw.encode("utf-8")).hexdigest()[:12],
     )

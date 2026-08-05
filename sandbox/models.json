@@ -1,0 +1,22 @@
+{
+  "_комментарий": "Возможности семейств моделей. Ключ — префикс имени модели, побеждает самый длинный совпавший префикс. Файл правится руками: если API отвергнет параметр, песочница снимет его сама и запишет это в лог прогона как отклонение — но лучше поправить здесь, чтобы лишних отказов не было.",
+
+  "_поля": {
+    "reasoning": "модель с внутренним рассуждением: max_tokens отправляется как max_completion_tokens",
+    "temperature": "принимает ли temperature / top_p",
+    "logprobs": "отдаёт ли пословную уверенность"
+  },
+
+  "gpt-5.5": {
+    "reasoning": true,
+    "temperature": false,
+    "logprobs": false,
+    "_заметка": "Значения выставлены по семейству gpt-5 и НЕ проверены на gpt-5.5. Если модель принимает temperature — поставьте true; если отдаёт logprobs — включите. Проверка занимает один прогон."
+  },
+  "gpt-5": { "reasoning": true, "temperature": false, "logprobs": false },
+  "o4": { "reasoning": true, "temperature": false, "logprobs": false },
+  "o3": { "reasoning": true, "temperature": false, "logprobs": false },
+  "o1": { "reasoning": true, "temperature": false, "logprobs": false },
+  "gpt-4.1": { "reasoning": false, "temperature": true, "logprobs": true },
+  "gpt-4o": { "reasoning": false, "temperature": true, "logprobs": true }
+}
