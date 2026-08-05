@@ -11,10 +11,14 @@ Claude Code.
 ## Запуск
 
 ```bash
-cp sandbox/.env.example sandbox/.env      # один раз
-# вписать ключ в OPENAI_API_KEY
+bash sandbox/set-key.sh     # один раз: спросит ключ и запишет его в sandbox/.env
 python3 sandbox/app.py
 ```
+
+На Windows вместо первой строки — `sandbox\set-key.bat`.
+
+Ключ вводится скрыто, попадает только в `sandbox/.env` (файл в `.gitignore`,
+права 600). Повторный запуск скрипта меняет ключ, остальные настройки сохраняются.
 
 Браузер откроется сам на `http://127.0.0.1:8765`.
 
