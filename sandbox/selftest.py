@@ -192,18 +192,19 @@ def main() -> int:
             {"profile": "medrep-simulator", "message": "Пациент на бисопрололе и амлодипине раздельно"},
         )
         retrieval = knowledge.get("retrieval") or {}
-        check("база знаний проиндексирована", retrieval.get("chunks_total", 0) > 100, f"фрагментов: {retrieval.get('chunks_total')}")
         check(
-            "подставлено не больше потолка в 50 фрагментов",
-            0 < retrieval.get("chunks_used", 0) <= 50,
-            f"подставлено: {retrieval.get('chunks_used')}",
+            "7 документов → режим предпросмотра (правило Langdock: до 20 целиком)",
+            retrieval.get("mode") == "preview",
+            f"режим: {retrieval.get('mode')}, документов: {retrieval.get('documents')}",
         )
         check(
-            "маленький файл подан целиком",
-            any("onboarding" in f["source"] for f in retrieval.get("full_text_files", [])),
+            "все файлы поданы целиком",
+            len(retrieval.get("full_text_files", [])) == 7,
+            f"файлов целиком: {len(retrieval.get('full_text_files', []))}, "
+            f"{retrieval.get('context_chars', 0) // 1024} КБ",
         )
         codes = [item["code"] for item in knowledge["prompt"]["deviations"]]
-        check("поиск по базе помечен отклонением", "knowledge_retrieval" in codes, ", ".join(codes))
+        check("способ подачи помечен отклонением", "knowledge_preview" in codes, ", ".join(codes))
         check(
             "системный промпт — только файл инструкций",
             len(knowledge["prompt"]["blocks"]) == 1

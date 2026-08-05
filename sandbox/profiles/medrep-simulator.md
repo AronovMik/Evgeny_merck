@@ -1,7 +1,7 @@
 ---
 name: Тренажёр Конкор — как проект в Langdock
 order: 0
-description: Промпт medrep_prompt_v16.md в поле инструкций + 7 файлов базы знаний, поданных поиском по фрагментам — та же механика, что у проектов Langdock.
+description: Промпт medrep_prompt_v16.md в поле инструкций + 7 файлов проекта. Их всего 7, то есть меньше 20, поэтому по правилу Langdock они подаются модели ЦЕЛИКОМ, а не поиском по фрагментам. Если в Langdock файлы подключены базой знаний или синхронизированной папкой — поставьте knowledge_mode: embedding.
 model: gpt-5.5
 system_files:
   - simulator/medrep_prompt_v16.md
@@ -13,5 +13,6 @@ knowledge_files:
   - simulator/competitive_messaging.md
   - simulator/mandatory_args.md
   - simulator/onboarding.md
+knowledge_mode: auto
 knowledge_top_k: 50
 ---

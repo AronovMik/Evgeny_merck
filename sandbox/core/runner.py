@@ -26,14 +26,21 @@ def gather_knowledge(profile: Profile, query: str) -> dict | None:
     if not profile.knowledge_files:
         return None
 
-    full_files: list[str] = []
-    search_files: list[str] = []
-    for relative in profile.knowledge_files:
-        path = (REPO_ROOT / relative)
-        if path.exists() and path.stat().st_size <= profile.knowledge_full_text_limit:
-            full_files.append(relative)
-        else:
-            search_files.append(relative)
+    # Правило Langdock: способ подачи определяется ЧИСЛОМ документов, а не их
+    # размером. До 20 документов агент показывает модели все файлы целиком,
+    # с 21-го переходит на поиск по фрагментам. Режим можно задать в профиле
+    # явно, если файлы подключены не прямой загрузкой, а базой знаний или
+    # синхронизированной папкой — там поиск включается всегда.
+    mode = profile.knowledge_mode
+    if mode == "auto":
+        mode = "preview" if len(profile.knowledge_files) <= 20 else "embedding"
+
+    if mode == "preview":
+        full_files = list(profile.knowledge_files)
+        search_files = []
+    else:
+        full_files = []
+        search_files = list(profile.knowledge_files)
 
     chunks, stats = knowledge_mod.build_index(
         search_files, chunk_chars=profile.knowledge_chunk_chars
@@ -52,6 +59,8 @@ def gather_knowledge(profile: Profile, query: str) -> dict | None:
 
     context = "\n\n".join(blocks)
     return {
+        "mode": mode,
+        "documents": len(profile.knowledge_files),
         "text": context,
         "retrieved": found,
         "chunks_total": len(chunks),
@@ -115,22 +124,36 @@ def prepare(
 
     deviations = [dev.to_dict() for dev in built.deviations]
 
-    if retrieval:
+    if retrieval and retrieval["mode"] == "preview":
         deviations.append(
             {
-                "code": "knowledge_retrieval",
+                "code": "knowledge_preview",
                 "detail": (
-                    f"База знаний подана поиском по фрагментам, как в Langdock: "
-                    f"подставлено {retrieval['chunks_used']} из {retrieval['chunks_total']} фрагментов "
-                    f"(потолок {retrieval['top_k']}), фрагмент ~{retrieval['chunk_chars']} симв., "
-                    f"эмбеддинги {retrieval['embedding_model']}, целиком вложено файлов: "
-                    f"{len(retrieval['full_text_files'])}. Механизм тот же, но размер фрагмента, "
-                    f"модель эмбеддингов и место вставки Langdock не публикует — побайтового "
-                    f"совпадения с платформой здесь нет и быть не может."
+                    f"Файлы проекта поданы целиком — {retrieval['documents']} документов, "
+                    f"{retrieval['context_chars']} символов. Это правило Langdock: до 20 документов "
+                    f"агент показывает модели весь файл, поиск по фрагментам включается с 21-го. "
+                    f"Не опубликовано, есть ли у их предпросмотра потолок объёма («as much text as "
+                    f"possible»), — если есть, платформа могла отдать модели меньше нашего."
                 ),
                 "severity": "info",
             }
         )
+    elif retrieval:
+        deviations.append(
+            {
+                "code": "knowledge_retrieval",
+                "detail": (
+                    f"База знаний подана поиском по фрагментам: подставлено "
+                    f"{retrieval['chunks_used']} из {retrieval['chunks_total']} фрагментов "
+                    f"(потолок {retrieval['top_k']}), фрагмент {retrieval['chunk_chars']} симв., "
+                    f"вектор {knowledge_mod.EMBEDDING_DIMENSIONS} измерений. Размер фрагмента, "
+                    f"размерность и потолок — по документации Langdock; какой моделью они считают "
+                    f"эмбеддинги, не опубликовано."
+                ),
+                "severity": "info",
+            }
+        )
+    if retrieval and retrieval["mode"] != "preview":
         if retrieval["method"] != "embeddings":
             deviations.append(
                 {
@@ -142,6 +165,7 @@ def prepare(
                     "severity": "high",
                 }
             )
+    if retrieval:
         missing = [f for f in retrieval["searched_files"] if f.get("missing")]
         if missing:
             deviations.append(
