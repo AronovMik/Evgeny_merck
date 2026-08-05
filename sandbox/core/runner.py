@@ -9,10 +9,61 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from . import checks as checks_mod
+from . import knowledge as knowledge_mod
 from . import llm, pricing, runlog, tokens
-from .config import CONFIG
+from .config import CONFIG, REPO_ROOT
 from .profiles import Profile
 from .prompt_builder import build_messages, build_system_prompt
+
+
+def gather_knowledge(profile: Profile, query: str) -> dict | None:
+    """Готовит контекст из файлов проекта так же, как это делает Langdock.
+
+    Небольшие файлы подаются целиком, крупные — поиском по фрагментам.
+    Возвращает и сам текст, и полный отчёт о поиске: без отчёта потом
+    невозможно отличить «модель не увидела нужный кусок» от «в базе этого нет».
+    """
+    if not profile.knowledge_files:
+        return None
+
+    full_files: list[str] = []
+    search_files: list[str] = []
+    for relative in profile.knowledge_files:
+        path = (REPO_ROOT / relative)
+        if path.exists() and path.stat().st_size <= profile.knowledge_full_text_limit:
+            full_files.append(relative)
+        else:
+            search_files.append(relative)
+
+    chunks, stats = knowledge_mod.build_index(
+        search_files, chunk_chars=profile.knowledge_chunk_chars
+    )
+    found = knowledge_mod.retrieve(query, chunks, top_k=profile.knowledge_top_k)
+
+    blocks: list[str] = []
+    full_details = []
+    for relative in full_files:
+        text = (REPO_ROOT / relative).read_text(encoding="utf-8")
+        blocks.append(f"[{relative}]\n{text}")
+        full_details.append({"source": relative, "chars": len(text)})
+
+    if found:
+        blocks.append(knowledge_mod.render_context(found))
+
+    context = "\n\n".join(blocks)
+    return {
+        "text": context,
+        "retrieved": found,
+        "chunks_total": len(chunks),
+        "chunks_used": len(found),
+        "full_text_files": full_details,
+        "searched_files": stats["files"],
+        "method": stats["method"],
+        "top_k": profile.knowledge_top_k,
+        "chunk_chars": profile.knowledge_chunk_chars,
+        "embedding_model": knowledge_mod.EMBEDDING_MODEL,
+        "context_chars": len(context),
+    }
 
 
 def prepare(
@@ -33,6 +84,14 @@ def prepare(
         override_system_text=overrides.get("system_text"),
     )
     messages = build_messages(built, user_message, history)
+
+    # База знаний проекта: ищем под конкретный вопрос и вкладываем найденное
+    # отдельным системным сообщением — тестируемый промпт остаётся нетронутым,
+    # а найденное видно в логе отдельной строкой.
+    retrieval = gather_knowledge(profile, user_message)
+    if retrieval and retrieval["text"]:
+        insert_at = 1 if messages and messages[0]["role"] == "system" else 0
+        messages.insert(insert_at, {"role": "system", "content": retrieval["text"]})
 
     model = overrides.get("model") or profile.model or CONFIG.default_model
     temperature = overrides.get("temperature", profile.temperature)
@@ -55,6 +114,45 @@ def prepare(
     )
 
     deviations = [dev.to_dict() for dev in built.deviations]
+
+    if retrieval:
+        deviations.append(
+            {
+                "code": "knowledge_retrieval",
+                "detail": (
+                    f"База знаний подана поиском по фрагментам, как в Langdock: "
+                    f"подставлено {retrieval['chunks_used']} из {retrieval['chunks_total']} фрагментов "
+                    f"(потолок {retrieval['top_k']}), фрагмент ~{retrieval['chunk_chars']} симв., "
+                    f"эмбеддинги {retrieval['embedding_model']}, целиком вложено файлов: "
+                    f"{len(retrieval['full_text_files'])}. Механизм тот же, но размер фрагмента, "
+                    f"модель эмбеддингов и место вставки Langdock не публикует — побайтового "
+                    f"совпадения с платформой здесь нет и быть не может."
+                ),
+                "severity": "info",
+            }
+        )
+        if retrieval["method"] != "embeddings":
+            deviations.append(
+                {
+                    "code": "knowledge_lexical_fallback",
+                    "detail": (
+                        "Эмбеддинги недоступны, фрагменты отобраны совпадением слов. "
+                        "Это не семантический поиск — с платформой такой прогон не сопоставим."
+                    ),
+                    "severity": "high",
+                }
+            )
+        missing = [f for f in retrieval["searched_files"] if f.get("missing")]
+        if missing:
+            deviations.append(
+                {
+                    "code": "knowledge_file_missing",
+                    "detail": "Файлы базы знаний не прочитаны: "
+                    + ", ".join(f["source"] for f in missing),
+                    "severity": "high",
+                }
+            )
+
     if history:
         deviations.append(
             {
@@ -109,8 +207,14 @@ def prepare(
             "stream": stream,
         },
         "request_body_redacted": runlog.redact_body(body),
-        "git": runlog.git_state(watched),
+        "git": runlog.git_state(watched + [f["source"] for f in (retrieval or {}).get("searched_files", [])]),
     }
+
+    if retrieval:
+        # Найденные фрагменты сохраняются целиком: запись прогона должна
+        # показывать ровно то, что модель видела. Без этого через неделю
+        # невозможно отличить пробел в базе от промаха поиска.
+        record["retrieval"] = {key: value for key, value in retrieval.items() if key != "text"}
 
     return {"record": record, "body": body, "adaptations": adaptations, "built": built}
 

@@ -558,6 +558,42 @@ function renderWhyRail(answer) {
     </div></div>`;
   }
 
+  // Что поиск поднял из базы знаний. Главный блок для разбора причины:
+  // видно, получила ли модель нужный материал вообще.
+  const retrieval = start.retrieval;
+  if (retrieval) {
+    const byFile = {};
+    (retrieval.retrieved || []).forEach((item) => {
+      byFile[item.source] = (byFile[item.source] || 0) + 1;
+    });
+    html += `<div class="card"><div class="card-title"><span>Что нашлось в базе знаний</span>
+      <span class="mono">${retrieval.chunks_used} из ${retrieval.chunks_total}</span></div>`;
+    html += `<div class="card-body"><p class="dim" style="margin:0 0 8px">
+      Поиск по фрагментам, как в проектах Langdock. Потолок ${retrieval.top_k} фрагментов,
+      фрагмент ~${retrieval.chunk_chars} симв., ${esc(retrieval.method)}.</p>`;
+    html += Object.entries(byFile).map(([file, count]) =>
+      `<div class="comp-top"><span class="comp-src">${esc(file.split('/').pop())}</span>
+       <span class="comp-num">${count} фрагм.</span></div>`).join('');
+    (retrieval.full_text_files || []).forEach((item) => {
+      html += `<div class="comp-top"><span class="comp-src">${esc(item.source.split('/').pop())}</span>
+        <span class="comp-num">целиком</span></div>`;
+    });
+    html += '</div>';
+    (retrieval.retrieved || []).slice(0, 12).forEach((item) => {
+      html += `<div class="comp-row">
+        <div class="comp-top">
+          <span class="comp-src">${esc(item.heading || item.source)}</span>
+          <span class="comp-num">${item.score}</span>
+        </div>
+        <div class="comp-meta">${esc((item.text || '').slice(0, 130))}…</div>
+      </div>`;
+    });
+    if ((retrieval.retrieved || []).length > 12) {
+      html += `<div class="comp-row"><div class="comp-meta">…и ещё ${retrieval.retrieved.length - 12} фрагментов, все в записи прогона</div></div>`;
+    }
+    html += '</div>';
+  }
+
   const blocks = prompt.blocks || [];
   if (blocks.length) {
     const total = Math.max(1, prompt.system_tokens || 1);
@@ -721,6 +757,7 @@ async function openRun(runId) {
       prompt: record.prompt,
       request: record.request,
       git: record.git,
+      retrieval: record.retrieval,
     },
     done: {
       response: record.response,

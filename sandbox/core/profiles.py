@@ -103,6 +103,11 @@ class Profile:
     seed: int | None = None
     system_files: list[str] = field(default_factory=list)
     context_files: list[str] = field(default_factory=list)
+    # База знаний проекта: подаётся поиском по фрагментам, как в Langdock
+    knowledge_files: list[str] = field(default_factory=list)
+    knowledge_top_k: int = 50
+    knowledge_chunk_chars: int = 1200
+    knowledge_full_text_limit: int = 4000
     system_text: str = ""
     checks: str = "default"
     description: str = ""
@@ -144,6 +149,10 @@ def load_profile(path: Path) -> Profile:
         seed=int(seed) if isinstance(seed, (int, float)) else None,
         system_files=_as_list(meta.get("system_files")),
         context_files=_as_list(meta.get("context_files")),
+        knowledge_files=_as_list(meta.get("knowledge_files")),
+        knowledge_top_k=int(meta.get("knowledge_top_k") or 50),
+        knowledge_chunk_chars=int(meta.get("knowledge_chunk_chars") or 1200),
+        knowledge_full_text_limit=int(meta.get("knowledge_full_text_limit") or 4000),
         system_text=body,
         checks=str(meta.get("checks") or "default"),
         description=str(meta.get("description") or ""),

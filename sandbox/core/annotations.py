@@ -23,7 +23,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .config import LOGS_DIR, SANDBOX_DIR, ensure_dirs
+from .config import LOGS_DIR, REPO_ROOT, SANDBOX_DIR, ensure_dirs
 from .runlog import load_run, update_run
 
 _STREAM_PATH = LOGS_DIR / "annotations.jsonl"
@@ -140,6 +140,9 @@ def build_evidence(record: dict, annotation: dict) -> dict:
         coverage.append({"term": term, "in_prompt": count > 0, "hits": count})
     missing = [item["term"] for item in coverage if not item["in_prompt"]]
 
+    # 1б. Если работала база знаний — развести три разные причины.
+    retrieval_diagnosis = _diagnose_retrieval(record, terms)
+
     # 2. Позиция фрагмента в ответе: хвостовые ошибки часто связаны с обрывом.
     start = annotation.get("start")
     position = None
@@ -181,7 +184,29 @@ def build_evidence(record: dict, annotation: dict) -> dict:
         notes.append(
             "Ответ оборван по лимиту токенов (finish_reason=length) — неполнота может объясняться этим, а не промптом."
         )
-    if missing:
+
+    if retrieval_diagnosis:
+        # При работающей базе знаний это главный вывод: три причины лечатся
+        # по-разному, и путать их нельзя.
+        if retrieval_diagnosis["absent_from_base"]:
+            notes.append(
+                "В базе знаний вообще нет: "
+                + ", ".join(retrieval_diagnosis["absent_from_base"][:8])
+                + ". Это пробел базы — модель взяла это не из ваших файлов."
+            )
+        if retrieval_diagnosis["in_base_not_retrieved"]:
+            notes.append(
+                "Есть в базе, но поиск это не поднял: "
+                + ", ".join(retrieval_diagnosis["in_base_not_retrieved"][:8])
+                + ". Промах поиска, а не промпта: модель нужного фрагмента не видела."
+            )
+        if retrieval_diagnosis["in_retrieved"]:
+            notes.append(
+                "Было в поданных фрагментах: "
+                + ", ".join(retrieval_diagnosis["in_retrieved"][:8])
+                + ". Материал модель получила и всё равно ответила так — причина в промпте или в самой модели."
+            )
+    elif missing:
         notes.append(
             "Терминов из цитаты нет в системном промпте: " + ", ".join(missing[:10])
             + ". Модель писала это не из предоставленного контекста."
@@ -217,7 +242,63 @@ def build_evidence(record: dict, annotation: dict) -> dict:
         "position_percent": position,
         "answer_chars": len(answer),
         "confidence": confidence,
+        "retrieval": retrieval_diagnosis,
         "facts": notes,
+    }
+
+
+def _diagnose_retrieval(record: dict, terms: list[str]) -> dict | None:
+    """Разводит три причины: пробел базы, промах поиска, ошибка при полном контексте.
+
+    Работает по сохранённому в прогоне отчёту о поиске, а не по текущему
+    состоянию файлов: база могла с тех пор измениться, и тогда разбор
+    прошлого замечания по свежим файлам врал бы.
+    """
+    retrieval = record.get("retrieval")
+    if not retrieval or not terms:
+        return None
+
+    from . import knowledge as knowledge_mod
+
+    retrieved = retrieval.get("retrieved") or []
+    retrieved_text = " ".join(item.get("text") or "" for item in retrieved).lower()
+
+    # Полный текст базы берём с диска: в прогоне его нет, а знать, есть ли
+    # термин в базе вообще, необходимо.
+    chunks: list = []
+    searched = [f["source"] for f in retrieval.get("searched_files", []) if not f.get("missing")]
+    if searched:
+        try:
+            chunks, _ = knowledge_mod.build_index(
+                searched, chunk_chars=retrieval.get("chunk_chars", 1200)
+            )
+        except Exception:
+            chunks = []
+
+    base_text = " ".join(chunk.text for chunk in chunks).lower()
+    for item in retrieval.get("full_text_files", []):
+        try:
+            base_text += " " + (REPO_ROOT / item["source"]).read_text(encoding="utf-8").lower()
+        except Exception:
+            pass
+
+    in_retrieved, in_base_only, absent = [], [], []
+    for term in terms:
+        lowered = term.lower()
+        if lowered in retrieved_text:
+            in_retrieved.append(term)
+        elif base_text and lowered in base_text:
+            in_base_only.append(term)
+        else:
+            absent.append(term)
+
+    return {
+        "in_retrieved": in_retrieved,
+        "in_base_not_retrieved": in_base_only,
+        "absent_from_base": absent,
+        "chunks_used": retrieval.get("chunks_used"),
+        "chunks_total": retrieval.get("chunks_total"),
+        "method": retrieval.get("method"),
     }
 
 

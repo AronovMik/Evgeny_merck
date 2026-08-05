@@ -212,6 +212,7 @@ class Handler(BaseHTTPRequestHandler):
                 "request": record["request"],
                 "request_body_redacted": record["request_body_redacted"],
                 "git": record["git"],
+                "retrieval": record.get("retrieval"),
             }
         )
 
@@ -249,6 +250,7 @@ class Handler(BaseHTTPRequestHandler):
                 "request": record["request"],
                 "git": record["git"],
                 "mock": record["mock"],
+                "retrieval": record.get("retrieval"),
             },
         )
 

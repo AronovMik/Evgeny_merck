@@ -186,7 +186,31 @@ def main() -> int:
         ablation = request(f"{base}/api/probe/ablation", {"run_id": run_id, "annotation_index": 0})
         check("проба абляцией отработала", len(ablation["variants"]) == 2, ablation["verdict"][:70])
 
-        print("\n7. Статика интерфейса")
+        print("\n7. База знаний проекта (механика Langdock)")
+        knowledge = request(
+            f"{base}/api/preview",
+            {"profile": "medrep-simulator", "message": "Пациент на бисопрололе и амлодипине раздельно"},
+        )
+        retrieval = knowledge.get("retrieval") or {}
+        check("база знаний проиндексирована", retrieval.get("chunks_total", 0) > 100, f"фрагментов: {retrieval.get('chunks_total')}")
+        check(
+            "подставлено не больше потолка в 50 фрагментов",
+            0 < retrieval.get("chunks_used", 0) <= 50,
+            f"подставлено: {retrieval.get('chunks_used')}",
+        )
+        check(
+            "маленький файл подан целиком",
+            any("onboarding" in f["source"] for f in retrieval.get("full_text_files", [])),
+        )
+        codes = [item["code"] for item in knowledge["prompt"]["deviations"]]
+        check("поиск по базе помечен отклонением", "knowledge_retrieval" in codes, ", ".join(codes))
+        check(
+            "системный промпт — только файл инструкций",
+            len(knowledge["prompt"]["blocks"]) == 1
+            and "medrep_prompt_v16" in knowledge["prompt"]["blocks"][0]["source"],
+        )
+
+        print("\n8. Статика интерфейса")
         for asset in ("/", "/static/app.js", "/static/styles.css"):
             body = request(f"{base}{asset}", raw=True)
             check(f"отдаётся {asset}", len(body) > 500, f"{len(body)} байт")
