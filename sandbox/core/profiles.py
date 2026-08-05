@@ -108,6 +108,9 @@ class Profile:
     # auto — по правилу Langdock: до 20 документов целиком, больше — поиском.
     # preview / embedding — задать способ вручную.
     knowledge_mode: str = "auto"
+    # Потолок предпросмотра на файл. 0 — не обрезать. Langdock своё значение
+    # не публикует («as much text as possible»), но обрезка у него есть.
+    knowledge_preview_char_limit: int = 0
     knowledge_top_k: int = 50
     knowledge_chunk_chars: int = 2000
     knowledge_full_text_limit: int = 4000
@@ -154,6 +157,7 @@ def load_profile(path: Path) -> Profile:
         context_files=_as_list(meta.get("context_files")),
         knowledge_files=_as_list(meta.get("knowledge_files")),
         knowledge_mode=str(meta.get("knowledge_mode") or "auto"),
+        knowledge_preview_char_limit=int(meta.get("knowledge_preview_char_limit") or 0),
         knowledge_top_k=int(meta.get("knowledge_top_k") or 50),
         knowledge_chunk_chars=int(meta.get("knowledge_chunk_chars") or 2000),
         knowledge_full_text_limit=int(meta.get("knowledge_full_text_limit") or 4000),

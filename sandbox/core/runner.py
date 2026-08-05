@@ -49,10 +49,23 @@ def gather_knowledge(profile: Profile, query: str) -> dict | None:
 
     blocks: list[str] = []
     full_details = []
+    limit = profile.knowledge_preview_char_limit
     for relative in full_files:
         text = (REPO_ROOT / relative).read_text(encoding="utf-8")
+        full_size = len(text)
+        cut = bool(limit) and full_size > limit
+        if cut:
+            text = text[:limit]
         blocks.append(f"[{relative}]\n{text}")
-        full_details.append({"source": relative, "chars": len(text)})
+        full_details.append(
+            {
+                "source": relative,
+                "chars": len(text),
+                "chars_in_file": full_size,
+                "truncated": cut,
+                "delivered_share": round(len(text) / full_size, 3) if full_size else 1.0,
+            }
+        )
 
     if found:
         blocks.append(knowledge_mod.render_context(found))
@@ -125,15 +138,32 @@ def prepare(
     deviations = [dev.to_dict() for dev in built.deviations]
 
     if retrieval and retrieval["mode"] == "preview":
+        обрезанные = [f for f in retrieval["full_text_files"] if f.get("truncated")]
+        if обрезанные:
+            deviations.append(
+                {
+                    "code": "knowledge_truncated",
+                    "detail": (
+                        "Файлы обрезаны по потолку предпросмотра — до модели доехало не всё: "
+                        + "; ".join(
+                            f"{f['source'].split('/')[-1]} {int(f['delivered_share'] * 100)}%"
+                            for f in обрезанные
+                        )
+                        + ". Хвосты этих файлов модель не видит вообще: то, что там написано, "
+                        "она выполнить не может по определению."
+                    ),
+                    "severity": "high",
+                }
+            )
         deviations.append(
             {
                 "code": "knowledge_preview",
                 "detail": (
-                    f"Файлы проекта поданы целиком — {retrieval['documents']} документов, "
-                    f"{retrieval['context_chars']} символов. Это правило Langdock: до 20 документов "
-                    f"агент показывает модели весь файл, поиск по фрагментам включается с 21-го. "
-                    f"Не опубликовано, есть ли у их предпросмотра потолок объёма («as much text as "
-                    f"possible»), — если есть, платформа могла отдать модели меньше нашего."
+                    f"Файлы проекта поданы предпросмотром: {retrieval['documents']} документов, "
+                    f"{retrieval['context_chars']} символов ушло в модель. Это правило Langdock — "
+                    f"до 20 документов агент показывает файлы, поиск по фрагментам включается "
+                    f"с 21-го. Потолок предпросмотра платформа не публикует; наш подобран под "
+                    f"показания индикатора контекста и может отличаться от их."
                 ),
                 "severity": "info",
             }

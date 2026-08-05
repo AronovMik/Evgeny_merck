@@ -194,6 +194,13 @@ def build_evidence(record: dict, annotation: dict) -> dict:
                 + ", ".join(retrieval_diagnosis["absent_from_base"][:8])
                 + ". Это пробел базы — модель взяла это не из ваших файлов."
             )
+        if retrieval_diagnosis.get("cut_by_preview_limit"):
+            notes.append(
+                "Есть в файле, но НЕ доехало до модели из-за обрезки предпросмотра: "
+                + ", ".join(retrieval_diagnosis["cut_by_preview_limit"][:8])
+                + ". Модель физически не видела этот кусок — правка промпта тут бесполезна, "
+                "надо поднимать нужное выше по файлу или дробить файл."
+            )
         if retrieval_diagnosis["in_base_not_retrieved"]:
             notes.append(
                 "Есть в базе, но поиск это не поднял: "
@@ -259,6 +266,40 @@ def _diagnose_retrieval(record: dict, terms: list[str]) -> dict | None:
         return None
 
     from . import knowledge as knowledge_mod
+
+    # Режим предпросмотра: сравниваем с тем, что РЕАЛЬНО доехало после обрезки,
+    # и отдельно с полным файлом. Разница между ними — самая коварная причина:
+    # в файле написано, а модель этого куска не видела.
+    if retrieval.get("mode") == "preview":
+        delivered = ""
+        full = ""
+        for item in retrieval.get("full_text_files", []):
+            try:
+                text = (REPO_ROOT / item["source"]).read_text(encoding="utf-8")
+            except Exception:
+                continue
+            full += " " + text.lower()
+            delivered += " " + text[: item.get("chars") or len(text)].lower()
+
+        доехало, обрезано, нет_в_базе = [], [], []
+        for term in terms:
+            lowered = term.lower()
+            if lowered in delivered:
+                доехало.append(term)
+            elif lowered in full:
+                обрезано.append(term)
+            else:
+                нет_в_базе.append(term)
+        return {
+            "in_retrieved": доехало,
+            "in_base_not_retrieved": [],
+            "cut_by_preview_limit": обрезано,
+            "absent_from_base": нет_в_базе,
+            "mode": "preview",
+            "truncated_files": [
+                f["source"] for f in retrieval.get("full_text_files", []) if f.get("truncated")
+            ],
+        }
 
     retrieved = retrieval.get("retrieved") or []
     retrieved_text = " ".join(item.get("text") or "" for item in retrieved).lower()
