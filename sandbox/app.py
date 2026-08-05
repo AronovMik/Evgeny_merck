@@ -21,7 +21,7 @@ from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from core import annotations, diffs, llm, probes, profiles, runlog, runner, suites  # noqa: E402
+from core import annotations, llm, probes, profiles, runlog, runner  # noqa: E402
 from core.config import CONFIG, WEB_DIR, ensure_dirs  # noqa: E402
 
 
@@ -120,14 +120,6 @@ class Handler(BaseHTTPRequestHandler):
                     return self._send_error_json("Прогон не найден", 404)
                 return self._send_json(record)
 
-            if path == "/api/compare":
-                run_a = runlog.load_run(query.get("a", [""])[0])
-                run_b = runlog.load_run(query.get("b", [""])[0])
-                if not run_a or not run_b:
-                    return self._send_error_json("Не найден один из прогонов", 404)
-                return self._send_json(
-                    {"a": _run_head(run_a), "b": _run_head(run_b), "diff": diffs.compare_runs(run_a, run_b)}
-                )
 
             if path == "/api/annotation-meta":
                 return self._send_json(annotations.load_categories())
@@ -135,27 +127,9 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/annotations":
                 return self._send_json(annotations.aggregate())
 
-            if path == "/api/suites":
-                return self._send_json([s.to_dict() for s in suites.list_suites()])
 
-            if path.startswith("/api/suite/results/"):
-                suite_id = path.rsplit("/", 1)[-1]
-                return self._send_json(suites.list_suite_results(suite_id))
 
-            if path == "/api/suite/result":
-                report = suites.load_suite_result(query.get("suite", [""])[0], query.get("label", [""])[0])
-                if not report:
-                    return self._send_error_json("Прогон набора не найден", 404)
-                return self._send_json(report)
 
-            if path == "/api/suite/compare":
-                return self._send_json(
-                    suites.compare_suite_results(
-                        query.get("suite", [""])[0],
-                        query.get("a", [""])[0],
-                        query.get("b", [""])[0],
-                    )
-                )
 
             return self._send_error_json("Неизвестный маршрут", 404)
 
@@ -208,8 +182,6 @@ class Handler(BaseHTTPRequestHandler):
                     )
                 )
 
-            if path == "/api/suite/run":
-                return self._handle_suite_run(body)
 
             return self._send_error_json("Неизвестный маршрут", 404)
 
@@ -290,17 +262,10 @@ class Handler(BaseHTTPRequestHandler):
 
         result = result or llm.LLMResult(error="Пустой ответ клиента")
 
-        judge_verdict = None
-        rubric = (body.get("judge_rubric") or "").strip()
-        if rubric and result.text and not result.error:
-            judge_verdict = runner.judge_answer(rubric, message, result.text, body.get("judge_model", ""))
-
         final = runner.finalize(
             record,
             result,
             check_set_name=body.get("check_set") or profile.checks or "default",
-            item_checks=body.get("checks") or [],
-            judge=judge_verdict,
         )
 
         self._sse(
@@ -311,40 +276,10 @@ class Handler(BaseHTTPRequestHandler):
                 "checks": final["checks"],
                 "checks_summary": final["checks_summary"],
                 "cost": final["cost"],
-                "judge": final.get("judge"),
                 "deviations": final["prompt"]["deviations"],
                 "baseline_candidate": final.get("baseline_candidate"),
             },
         )
-
-    def _handle_suite_run(self, body: dict) -> None:
-        suite = suites.get_suite(body.get("suite", ""))
-        if not suite:
-            return self._send_error_json("Набор не найден", 404)
-
-        self._start_sse()
-        self._sse("start", {"suite": suite.id, "items": len(suite.items)})
-
-        def progress(payload: dict) -> None:
-            try:
-                self._sse("progress", payload)
-            except Exception:
-                pass
-
-        try:
-            report = suites.run_suite(
-                suite,
-                profile_id=body.get("profile", ""),
-                label=body.get("label", ""),
-                overrides=body.get("overrides") or {},
-                use_judge=bool(body.get("judge")),
-                workers=int(body.get("workers") or 3),
-                progress=progress,
-            )
-            self._sse("done", report)
-        except Exception as exc:
-            traceback.print_exc()
-            self._sse("error", {"message": f"{type(exc).__name__}: {exc}"})
 
     # --- статика -----------------------------------------------------------
 
@@ -367,22 +302,6 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
-def _run_head(record: dict) -> dict:
-    """Короткая карточка прогона для интерфейса сравнения."""
-    return {
-        "id": record["id"],
-        "ts": record["ts"],
-        "profile": record.get("profile", {}).get("name"),
-        "profile_id": record.get("profile", {}).get("id"),
-        "model": record.get("request", {}).get("model"),
-        "question": record.get("input", {}).get("user_message", "")[:300],
-        "text": record.get("response", {}).get("text", ""),
-        "checks_summary": record.get("checks_summary"),
-        "git": record.get("git"),
-        "clean": record.get("prompt", {}).get("clean"),
-    }
-
-
 def main() -> None:
     ensure_dirs()
     server = ThreadingHTTPServer((CONFIG.host, CONFIG.port), Handler)
@@ -398,7 +317,6 @@ def main() -> None:
         print("  Режим:        MOCK — запросы к API не отправляются")
         print("                (создайте sandbox/.env с OPENAI_API_KEY для реальных прогонов)")
     print(f"  Профилей:     {len(profiles.list_profiles())}")
-    print(f"  Наборов:      {len(suites.list_suites())}")
     print("=" * 68)
     print("  Ctrl+C — остановить")
     print()

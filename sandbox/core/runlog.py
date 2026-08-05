@@ -93,7 +93,6 @@ def _index_entry(record: dict) -> dict:
         "latency_ms": response.get("latency_ms"),
         "checks_ok": checks.get("ok"),
         "checks_failed": checks.get("failed"),
-        "judge_score": (record.get("judge") or {}).get("score"),
         "annotations_count": len(record.get("annotations") or []),
         "annotation_categories": sorted(
             {item.get("category") for item in (record.get("annotations") or []) if item.get("category")}
@@ -305,17 +304,6 @@ def render_markdown(record: dict) -> str:
             arg = f" `{check.get('arg')}`" if check.get("arg") else ""
             detail = f" — {check.get('detail')}" if check.get("detail") else ""
             lines.append(f"- {mark} {check.get('kind')}{arg}{detail}")
-        lines.append("")
-
-    judge = record.get("judge")
-    if judge:
-        lines.append("## Оценка модели-судьи")
-        lines.append("")
-        lines.append(f"- Балл: **{judge.get('score')}/5** — {judge.get('verdict')}")
-        for issue in judge.get("issues") or []:
-            lines.append(f"  - ❗ {issue}")
-        for strength in judge.get("strengths") or []:
-            lines.append(f"  - ➕ {strength}")
         lines.append("")
 
     lines.append("## Вопрос")

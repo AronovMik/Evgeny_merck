@@ -1,7 +1,7 @@
 """Оркестрация одного прогона: сборка → вызов → проверки → журнал.
 
-Один и тот же код обслуживает и чат, и батч-прогон наборов тестов —
-иначе ручной и автоматический прогоны меряли бы разное.
+Один и тот же код обслуживает и чат, и повторные прогоны проб —
+иначе основной и служебные прогоны меряли бы разное.
 """
 
 from __future__ import annotations
@@ -121,7 +121,6 @@ def finalize(
     *,
     item_checks: list[dict] | None = None,
     check_set_name: str = "default",
-    judge: dict | None = None,
     suite: str = "",
     suite_label: str = "",
     item_title: str = "",
@@ -158,8 +157,6 @@ def finalize(
     record["checks_summary"] = checks_mod.summarize(check_results)
     record["cost"] = pricing.estimate_cost(record["request"]["model"], usage)
     record["check_set"] = check_set_name
-    if judge:
-        record["judge"] = judge
     if suite:
         record["suite"] = suite
         record["suite_label"] = suite_label
@@ -185,10 +182,8 @@ def run_sync(
     suite: str = "",
     suite_label: str = "",
     item_title: str = "",
-    judge_rubric: str = "",
-    judge_model: str = "",
 ) -> dict:
-    """Полный синхронный прогон — используется батч-прогоном наборов тестов."""
+    """Полный синхронный прогон — используется пробами (повтор и абляция)."""
     prepared = prepare(profile, user_message, overrides=overrides, stream=False)
     engine = llm.mock_completion if CONFIG.effective_mock else llm.stream_completion
 
@@ -203,40 +198,13 @@ def run_sync(
             result = payload
     result = result or llm.LLMResult(error="Пустой ответ клиента")
 
-    judge_verdict = None
-    if judge_rubric and result.text and not result.error:
-        judge_verdict = judge_answer(judge_rubric, user_message, result.text, judge_model)
-
     return finalize(
         prepared["record"],
         result,
         item_checks=item_checks,
         check_set_name=check_set_name,
-        judge=judge_verdict,
         suite=suite,
         suite_label=suite_label,
         item_title=item_title,
     )
 
-
-def judge_answer(rubric: str, question: str, answer: str, model: str = "") -> dict:
-    """Оценка ответа моделью-судьёй.
-
-    Отдельный вызов после получения ответа. На тестируемый запрос не влияет.
-    """
-    judge_model = model or CONFIG.default_model
-    messages = checks_mod.build_judge_messages(rubric, question, answer)
-    body, adaptations = llm.build_request_body(judge_model, messages, temperature=0, stream=True)
-
-    engine = llm.mock_completion if CONFIG.effective_mock else llm.stream_completion
-    result = None
-    for event, payload in engine(body, adaptations):
-        if event in ("done", "error"):
-            result = payload
-    if result is None or result.error:
-        return {"score": None, "verdict": f"судья недоступен: {getattr(result, 'error', 'нет ответа')}", "parsed": False}
-
-    parsed = checks_mod.parse_judge_reply(result.text)
-    parsed["model"] = judge_model
-    parsed["usage"] = result.usage
-    return parsed

@@ -17,16 +17,12 @@
   <div class="topbar-right">
     <span id="mode-badge" class="badge badge-muted">…</span>
     <span id="api-badge" class="badge badge-muted"></span>
-    <button id="theme-toggle" class="btn btn-ghost btn-sm" title="Светлая / тёмная тема">◐</button>
   </div>
 </header>
 
 <nav class="tabs">
   <button class="tab tab-active" data-tab="chat">Чат и разметка</button>
-  <button class="tab" data-tab="findings">Замечания</button>
-  <button class="tab" data-tab="runs">Прогоны</button>
-  <button class="tab" data-tab="suites">Наборы тестов</button>
-  <button class="tab" data-tab="compare">Сравнение</button>
+  <button class="tab" data-tab="log">Журнал и замечания</button>
 </nav>
 
 <!-- ================= ЧАТ И РАЗМЕТКА ================= -->
@@ -42,39 +38,30 @@
         <input id="model-input" list="model-list" placeholder="из профиля">
         <datalist id="model-list"></datalist>
       </label>
-      <label class="control control-narrow">
-        <span>Temp</span>
-        <input id="temp-input" type="number" step="0.1" min="0" max="2" placeholder="—">
-      </label>
-      <label class="control control-narrow">
-        <span>Seed</span>
-        <input id="seed-input" type="number" placeholder="—">
-      </label>
-      <label class="control-check" title="Сохранять предыдущие сообщения в контексте. Нужно для цикла «случай → разбор → эталон».">
+      <label class="control-check" title="Держать предыдущие сообщения в контексте. Нужно для цикла «случай → разбор → эталон».">
         <input id="history-toggle" type="checkbox" checked>
         <span>История</span>
       </label>
-      <label class="control-check" title="Запрашивать пословную уверенность модели. Поддерживается не всеми моделями.">
+      <label class="control-check hidden" id="logprobs-holder" title="Пословная уверенность модели. Показывает, уверенно ли модель выдала размеченный фрагмент.">
         <input id="logprobs-toggle" type="checkbox">
-        <span>logprobs</span>
+        <span>Уверенность (logprobs)</span>
       </label>
-      <button id="preview-btn" class="btn btn-ghost" title="Состав промпта без вызова API">Состав промпта</button>
-      <button id="reload-btn" class="btn btn-ghost" title="Перечитать профили с диска">↻</button>
+      <button id="preview-btn" class="btn btn-ghost" title="Показать, что уйдёт в API, не отправляя запрос">Что уйдёт в API</button>
+      <button id="reload-btn" class="btn btn-ghost" title="Перечитать профили с диска после правки промпта">↻</button>
     </div>
 
     <div id="profile-note" class="profile-note"></div>
 
     <div id="messages" class="messages">
       <div class="empty-state">
-        <p><strong>Обычный чат — как работа с агентом.</strong> Запрос уходит в API ровно так,
-           как ушёл бы напрямую: система + сообщения, без добавленных песочницей слов.</p>
-        <p><strong>Разметка.</strong> В любом ответе выделите мышью фрагмент — откроется форма
-           замечания: часть ответа, категория ошибки, комментарий. Замечание пишется в лог
-           вместе с доказательной базой: было ли это в промпте, уверенно ли модель это выдала,
-           не оборван ли ответ.</p>
-        <p><strong>Причина, а не догадка.</strong> По каждому замечанию доступны две пробы:
-           повтор N раз (устойчиво или случайно) и абляция (исчезает ли ошибка без конкретного
-           файла промпта).</p>
+        <p><strong>Работайте как обычно.</strong> Запрос уходит в API ровно так, как ушёл бы
+           напрямую: система + сообщения, без добавленных песочницей слов.</p>
+        <p><strong>Выделите мышью любой фрагмент ответа</strong> — откроется форма замечания:
+           часть ответа, категория ошибки, комментарий. Замечаний к одному ответу
+           сколько угодно.</p>
+        <p><strong>Причину видно там же.</strong> К каждому замечанию собираются факты о входе:
+           было ли это в промпте, уверенно ли модель это выдала, не оборван ли ответ.
+           Плюс две пробы — повтор и абляция.</p>
       </div>
     </div>
 
@@ -82,16 +69,15 @@
       <textarea id="input" rows="3" placeholder="Сообщение агенту…   (Ctrl+Enter — отправить)"></textarea>
       <div class="composer-actions">
         <button id="send-btn" class="btn btn-primary">Отправить</button>
-        <button id="ab-btn" class="btn" title="Один вопрос через несколько профилей сразу">A/B по профилям…</button>
-        <button id="clear-btn" class="btn btn-ghost">Очистить диалог</button>
+        <button id="clear-btn" class="btn btn-ghost">Новый диалог</button>
       </div>
     </div>
   </section>
 
   <aside class="log-column">
     <div class="rail-switch">
-      <button class="seg seg-active" data-rail="marks">Разметка</button>
-      <button class="seg" data-rail="log">Лог прогона</button>
+      <button class="seg seg-active" data-rail="marks">Замечания</button>
+      <button class="seg" data-rail="log">Почему так вышло</button>
     </div>
     <div class="log-header">
       <h2 id="rail-title">Замечания к ответу</h2>
@@ -101,104 +87,30 @@
       <p class="dim">Выделите фрагмент в ответе модели, чтобы поставить замечание.</p>
     </div>
     <div id="rail-log" class="log-body hidden">
-      <p class="dim">Здесь появится разбор запроса: состав промпта пофайлово, отклонения от
-         чистого вызова, токены, стоимость, задержки, автопроверки.</p>
+      <p class="dim">Здесь появится разбор запроса: что ушло в API, из каких файлов собран
+         промпт, не оборван ли ответ.</p>
     </div>
   </aside>
 </main>
 
-<!-- ================= ЗАМЕЧАНИЯ ================= -->
-<main id="tab-findings" class="tab-panel">
-  <div class="panel-head">
-    <h2>Накопленные замечания</h2>
-    <div class="panel-head-actions">
-      <button id="findings-refresh" class="btn btn-ghost">↻ Обновить</button>
-      <button id="findings-digest" class="btn">Собрать сводку для Claude Code</button>
-    </div>
-  </div>
-  <div id="findings-body" class="detail-pane"></div>
-</main>
-
-<!-- ================= ПРОГОНЫ ================= -->
-<main id="tab-runs" class="tab-panel">
+<!-- ================= ЖУРНАЛ ================= -->
+<main id="tab-log" class="tab-panel">
   <div class="panel-head">
     <h2>Журнал прогонов</h2>
     <div class="panel-head-actions">
-      <select id="runs-filter-profile"><option value="">Все профили</option></select>
-      <label class="control-check"><input id="runs-filter-errors" type="checkbox"><span>Только ошибки</span></label>
-      <button id="runs-refresh" class="btn btn-ghost">↻ Обновить</button>
-      <button id="runs-compare" class="btn" disabled>Сравнить выбранные (0)</button>
+      <button id="log-refresh" class="btn btn-ghost">↻ Обновить</button>
+      <button id="log-digest" class="btn">Собрать сводку для Claude Code</button>
     </div>
   </div>
   <div class="table-wrap">
     <table id="runs-table" class="grid">
       <thead>
-        <tr>
-          <th></th><th>Время</th><th>Профиль</th><th>Модель</th><th>Вопрос</th>
-          <th>Промпт sha</th><th>Токены</th><th>$</th><th>мс</th><th>Проверки</th><th>Замечаний</th><th>Чистота</th>
-        </tr>
+        <tr><th>Время</th><th>Профиль</th><th>Вопрос</th><th>Замечаний</th><th>Чистота</th><th></th></tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
-  <div id="run-detail" class="detail-pane"></div>
-</main>
-
-<!-- ================= НАБОРЫ ================= -->
-<main id="tab-suites" class="tab-panel">
-  <div class="panel-head">
-    <h2>Наборы регресс-тестов</h2>
-  </div>
-  <div class="suite-runner">
-    <label class="control">
-      <span>Набор</span>
-      <select id="suite-select"></select>
-    </label>
-    <label class="control">
-      <span>Профиль</span>
-      <select id="suite-profile"></select>
-    </label>
-    <label class="control">
-      <span>Метка прогона</span>
-      <input id="suite-label" placeholder="например: база или после-правки-блок-3">
-    </label>
-    <label class="control-check" title="Дополнительный вызов модели-судьи. На тестируемый запрос не влияет.">
-      <input id="suite-judge" type="checkbox"><span>Судья</span>
-    </label>
-    <button id="suite-run" class="btn btn-primary">Прогнать набор</button>
-  </div>
-  <div id="suite-progress" class="progress-line"></div>
-  <div id="suite-info" class="suite-info"></div>
-
-  <div class="panel-head">
-    <h3>Сохранённые прогоны набора</h3>
-    <div class="panel-head-actions">
-      <button id="suite-compare-btn" class="btn" disabled>Сравнить выбранные (0)</button>
-    </div>
-  </div>
-  <div class="table-wrap">
-    <table id="suite-results-table" class="grid">
-      <thead><tr><th></th><th>Метка</th><th>Время</th><th>Профиль</th><th>Модель</th><th>Промпт sha</th><th>Пунктов ОК</th><th>Провалов</th><th>Судья ср.</th><th>$</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <div id="suite-compare" class="detail-pane"></div>
-</main>
-
-<!-- ================= СРАВНЕНИЕ ================= -->
-<main id="tab-compare" class="tab-panel">
-  <div class="panel-head">
-    <h2>Сравнение двух прогонов</h2>
-    <div class="panel-head-actions">
-      <input id="cmp-a" class="mono" placeholder="ID прогона A (база)">
-      <input id="cmp-b" class="mono" placeholder="ID прогона B (новый)">
-      <button id="cmp-run" class="btn btn-primary">Сравнить</button>
-    </div>
-  </div>
-  <div id="compare-result" class="detail-pane">
-    <p class="dim">Выберите два прогона во вкладке «Прогоны» или введите их ID вручную.
-       Сравнение отдельно показывает, что изменилось на входе и что изменилось на выходе.</p>
-  </div>
+  <div id="findings-body" class="detail-pane"></div>
 </main>
 
 <!-- Форма замечания, всплывает у выделения -->
@@ -220,10 +132,10 @@
   </label>
   <label class="control">
     <span>Что именно не так</span>
-    <textarea id="annot-comment" rows="3" placeholder="Например: доза указана верно, но показание не соответствует разделу 4.1 ОХЛП"></textarea>
+    <textarea id="annot-comment" rows="3" placeholder="Например: показание не соответствует разделу 4.1 ОХЛП"></textarea>
   </label>
   <div class="annot-actions">
-    <button id="annot-save" class="btn btn-primary btn-sm">Сохранить замечание</button>
+    <button id="annot-save" class="btn btn-primary btn-sm">Сохранить</button>
     <button id="annot-cancel" class="btn btn-ghost btn-sm">Отмена</button>
   </div>
 </div>

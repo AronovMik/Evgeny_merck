@@ -14,12 +14,10 @@ SANDBOX_DIR = Path(__file__).resolve().parent.parent
 REPO_ROOT = SANDBOX_DIR.parent
 
 PROFILES_DIR = SANDBOX_DIR / "profiles"
-SUITES_DIR = SANDBOX_DIR / "suites"
 CHECKS_DIR = SANDBOX_DIR / "checks"
 WEB_DIR = SANDBOX_DIR / "web"
 LOGS_DIR = SANDBOX_DIR / "logs"
 RUNS_DIR = LOGS_DIR / "runs"
-SUITE_RESULTS_DIR = LOGS_DIR / "suites"
 
 DEFAULT_BASE_URL = "https://api.openai.com/v1"
 
@@ -83,7 +81,7 @@ class Config:
 
 
 def ensure_dirs() -> None:
-    for path in (LOGS_DIR, RUNS_DIR, SUITE_RESULTS_DIR, PROFILES_DIR, SUITES_DIR, CHECKS_DIR):
+    for path in (LOGS_DIR, RUNS_DIR, PROFILES_DIR, CHECKS_DIR):
         path.mkdir(parents=True, exist_ok=True)
 
 

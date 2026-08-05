@@ -2,8 +2,8 @@
 """Самопроверка песочницы: python3 sandbox/selftest.py
 
 Поднимает сервер в mock-режиме на свободном порту, прогоняет весь цикл
-(чат → лог прогона → разметка → пробы → набор тестов → сравнение) и печатает
-отчёт. К API не обращается и денег не тратит.
+(чат → лог прогона → разметка → возврат к прогону → пробы) и печатает отчёт.
+К API не обращается и денег не тратит.
 
 Запускать после правок песочницы или когда что-то ведёт себя странно.
 """
@@ -170,48 +170,23 @@ def main() -> int:
         aggregate = request(f"{base}/api/annotations")
         check("срез по замечаниям строится", aggregate["total"] == 1, f"категорий: {len(aggregate['by_category'])}")
 
-        print("\n5. Пробы процесса")
+        print("\n5. Возврат к прогону для доразметки")
+        again = request(f"{base}/api/run/{run_id}")
+        check("прогон отдаётся целиком", bool((again.get("response") or {}).get("text")))
+        check("замечания при нём сохранились", len(again.get("annotations") or []) == 1)
+        listing = request(f"{base}/api/runs?limit=10")
+        check(
+            "в журнале виден счётчик замечаний",
+            any(item["id"] == run_id and item.get("annotations_count") == 1 for item in listing),
+        )
+
+        print("\n6. Пробы процесса")
         stability = request(f"{base}/api/probe/stability", {"run_id": run_id, "annotation_index": 0, "repeats": 3})
         check("проба на стабильность отработала", len(stability["repeats"]) == 3, stability["verdict"][:70])
         ablation = request(f"{base}/api/probe/ablation", {"run_id": run_id, "annotation_index": 0})
         check("проба абляцией отработала", len(ablation["variants"]) == 2, ablation["verdict"][:70])
 
-        print("\n6. Набор регресс-тестов")
-        suites = request(f"{base}/api/suites")
-        check("набор разобран", suites and len(suites[0]["items"]) >= 5, f"пунктов: {len(suites[0]['items']) if suites else 0}")
-        suite_id = suites[0]["id"]
-        events = parse_sse(
-            request(
-                f"{base}/api/suite/run",
-                {"suite": suite_id, "profile": "repo-instructions", "label": "selftest-a"},
-                raw=True,
-            )
-        )
-        check("прогон набора завершился", "done" in events)
-        report = events["done"][0]
-        check("итоги посчитаны", report["summary"]["items"] == len(suites[0]["items"]), json.dumps(report["summary"], ensure_ascii=False))
-
-        parse_sse(
-            request(
-                f"{base}/api/suite/run",
-                {"suite": suite_id, "profile": "baseline-empty", "label": "selftest-b"},
-                raw=True,
-            )
-        )
-        comparison = request(f"{base}/api/suite/compare?suite={suite_id}&a=selftest-a&b=selftest-b")
-        check(
-            "сравнение двух меток строится",
-            len(comparison["rows"]) > 0,
-            f"улучшений {comparison['totals']['improved']}, регрессий {comparison['totals']['regressed']}",
-        )
-
-        print("\n7. Сравнение прогонов")
-        runs = request(f"{base}/api/runs?limit=5")
-        check("журнал прогонов заполняется", len(runs) >= 2, f"записей: {len(runs)}")
-        diff = request(f"{base}/api/compare?a={runs[1]['id']}&b={runs[0]['id']}")
-        check("диф считается", "verdict" in diff["diff"], diff["diff"]["verdict"][:70])
-
-        print("\n8. Статика интерфейса")
+        print("\n7. Статика интерфейса")
         for asset in ("/", "/static/app.js", "/static/styles.css"):
             body = request(f"{base}{asset}", raw=True)
             check(f"отдаётся {asset}", len(body) > 500, f"{len(body)} байт")

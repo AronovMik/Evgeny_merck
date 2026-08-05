@@ -1,9 +1,9 @@
-"""Автоматические проверки ответа.
+"""Автоматические проверки ответа — дешёвый сигнал до чтения текста.
 
-Смысл: «стало лучше или хуже» нельзя мерить глазами на каждой итерации.
-Часть требований из INSTRUCTIONS.md проверяется детерминированно — наличие
-источников, отсутствие запрещённых формулировок, дисклеймер при off-label,
-длина, язык. Это даёт быстрый сигнал регрессии до того, как читать текст.
+Проверяется то, что проверяется детерминированно: запрещённые формулировки
+из Блока 2.3 INSTRUCTIONS.md, дисклеймер при упоминании off-label, язык ответа.
+Набор правится в sandbox/checks/default.json. Качество по существу оценивает
+человек разметкой — эти проверки её не заменяют, а лишь ловят грубое.
 
 Важно: проверки выполняются ПОСЛЕ получения ответа, над готовым текстом.
 В запрос к модели они ничего не добавляют — тестируемый вызов остаётся чистым.
@@ -64,17 +64,6 @@ def load_check_set(name: str = "default") -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
         return {}
-
-
-def parse_check_line(line: str) -> dict | None:
-    """Разбирает строку проверки из набора тестов: 'contains: ХСН'."""
-    text = line.strip().lstrip("-").strip()
-    if not text:
-        return None
-    if ":" in text:
-        kind, _, arg = text.partition(":")
-        return {"kind": kind.strip().lower(), "arg": arg.strip()}
-    return {"kind": text.lower(), "arg": ""}
 
 
 def _words(text: str) -> int:
@@ -165,10 +154,6 @@ def run_checks(text: str, checks: list[dict], check_set: dict | None = None) -> 
                 has = any(re.search(p, text, re.IGNORECASE) for p in _OFF_LABEL_DISCLAIMER)
                 results.append(CheckResult(kind, "", has, "" if has else "off-label упомянут без дисклеймера", severity))
 
-        elif kind == "judge":
-            # Обрабатывается отдельно (нужен вызов API) — см. suites.judge_answer.
-            continue
-
         else:
             results.append(CheckResult(kind or "?", arg, False, "неизвестный тип проверки", "warn"))
 
@@ -186,42 +171,3 @@ def summarize(results: list[CheckResult]) -> dict:
         "ok": not errors,
     }
 
-
-JUDGE_SYSTEM_PROMPT = (
-    "Ты — строгий рецензент ответов медицинского советника. Оцени ответ по критериям ниже. "
-    "Отвечай ТОЛЬКО валидным JSON вида "
-    '{"score": <1-5>, "verdict": "<одно предложение>", "issues": ["..."], "strengths": ["..."]}. '
-    "Без markdown-обёрток."
-)
-
-
-def build_judge_messages(rubric: str, question: str, answer: str) -> list[dict]:
-    """Судейский вызов — отдельный запрос, тестируемый прогон он не трогает."""
-    return [
-        {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
-        {
-            "role": "user",
-            "content": (
-                f"КРИТЕРИИ ОЦЕНКИ:\n{rubric}\n\n"
-                f"ВОПРОС:\n{question}\n\n"
-                f"ОТВЕТ НА ОЦЕНКУ:\n{answer}"
-            ),
-        },
-    ]
-
-
-def parse_judge_reply(text: str) -> dict:
-    cleaned = text.strip()
-    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
-    cleaned = re.sub(r"\s*```$", "", cleaned)
-    try:
-        data = json.loads(cleaned)
-        return {
-            "score": data.get("score"),
-            "verdict": data.get("verdict", ""),
-            "issues": data.get("issues", []),
-            "strengths": data.get("strengths", []),
-            "parsed": True,
-        }
-    except Exception:
-        return {"score": None, "verdict": text[:500], "issues": [], "strengths": [], "parsed": False}
