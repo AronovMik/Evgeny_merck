@@ -106,9 +106,12 @@ def build_request_body(
     seed: int | None = None,
     stream: bool = True,
     logprobs: bool = False,
+    tools: list[dict] | None = None,
 ) -> tuple[dict, list[dict]]:
     """Собирает тело запроса. Возвращает (body, adaptations)."""
     body: dict = {"model": model, "messages": messages}
+    if tools:
+        body["tools"] = tools
     adaptations: list[dict] = []
 
     # logprobs — единственное окно в процесс генерации, которое отдаёт API:
@@ -392,3 +395,35 @@ def list_models() -> list[str]:
         return [m for m in models if m]
     except Exception:
         return []
+
+
+def call_once(body: dict) -> dict:
+    """Один синхронный вызов без стрима. Нужен циклу с инструментами.
+
+    В цикле «модель просит файл → отдаём → модель отвечает» стрим только
+    мешает: промежуточные ответы пользователю не показываются.
+    """
+    payload = {k: v for k, v in body.items() if k not in ("stream", "stream_options")}
+    request = urllib.request.Request(
+        f"{CONFIG.base_url}/chat/completions",
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers=_headers(),
+        method="POST",
+    )
+    attempt = 0
+    while True:
+        attempt += 1
+        try:
+            with urllib.request.urlopen(request, timeout=CONFIG.request_timeout) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:
+            raw = exc.read().decode("utf-8", errors="replace")
+            if exc.code in (429, 500, 502, 503, 504) and attempt <= CONFIG.max_retries:
+                time.sleep(2 ** attempt)
+                continue
+            raise RuntimeError(f"HTTP {exc.code}: {raw[:300]}") from exc
+        except Exception:
+            if attempt <= CONFIG.max_retries:
+                time.sleep(2 ** attempt)
+                continue
+            raise

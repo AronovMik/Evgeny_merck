@@ -50,6 +50,16 @@ def gather_knowledge(profile: Profile, query: str) -> dict | None:
     blocks: list[str] = []
     full_details = []
     limit = profile.knowledge_preview_char_limit
+
+    # Перечень файлов с их реальными размерами. В Langdock агент получает
+    # список документов вместе с фрагментами и знает, что файлы длиннее
+    # показанного; без перечня он этого не знает и ведёт себя иначе.
+    if full_files:
+        listing = ["Файлы проекта:"]
+        for relative in full_files:
+            size = (REPO_ROOT / relative).stat().st_size
+            listing.append(f"- {relative.split('/')[-1]} ({size} байт)")
+        blocks.append("\n".join(listing))
     for relative in full_files:
         text = (REPO_ROOT / relative).read_text(encoding="utf-8")
         full_size = len(text)
