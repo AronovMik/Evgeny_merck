@@ -12,8 +12,10 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import socket
 import sys
 import traceback
+import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -302,10 +304,62 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(data)
 
 
+def _port_taken(host: str, port: int) -> bool:
+    with socket.socket() as probe:
+        probe.settimeout(0.4)
+        return probe.connect_ex((host, port)) == 0
+
+
+def _sandbox_already_running(host: str, port: int) -> bool:
+    """Отличает «порт занят нашей же песочницей» от «занят чужой программой»."""
+    try:
+        with urllib.request.urlopen(f"http://{host}:{port}/api/config", timeout=1) as response:
+            return "prompt_token_guard" in response.read().decode("utf-8", errors="replace")
+    except Exception:
+        return False
+
+
+def _pick_port(host: str, wanted: int) -> int | None:
+    """Ищет свободный порт рядом с желаемым."""
+    for candidate in range(wanted + 1, wanted + 21):
+        if not _port_taken(host, candidate):
+            return candidate
+    return None
+
+
 def main() -> None:
     ensure_dirs()
-    server = ThreadingHTTPServer((CONFIG.host, CONFIG.port), Handler)
-    url = f"http://{CONFIG.host}:{CONFIG.port}"
+    port = CONFIG.port
+
+    # Занятый порт — самая частая заминка при запуске, и стандартный traceback
+    # Python про неё ничего не объясняет. Разбираемся сами и говорим по-русски.
+    if _port_taken(CONFIG.host, port):
+        if _sandbox_already_running(CONFIG.host, port):
+            print()
+            print("Песочница уже запущена — второй раз её поднимать не нужно.")
+            print(f"Откройте в браузере:  http://{CONFIG.host}:{port}")
+            print()
+            print("Чтобы остановить ту, что работает: перейдите в её окно терминала")
+            print("и нажмите Ctrl+C.")
+            if "--no-browser" not in sys.argv:
+                try:
+                    webbrowser.open(f"http://{CONFIG.host}:{port}")
+                except Exception:
+                    pass
+            return
+
+        free = _pick_port(CONFIG.host, port)
+        if free is None:
+            print()
+            print(f"Порт {port} занят другой программой, и рядом свободных тоже нет.")
+            print("Укажите порт вручную:  SANDBOX_PORT=9000 python3 sandbox/app.py")
+            return
+        print()
+        print(f"Порт {port} занят другой программой — беру следующий свободный: {free}.")
+        port = free
+
+    server = ThreadingHTTPServer((CONFIG.host, port), Handler)
+    url = f"http://{CONFIG.host}:{port}"
 
     print("=" * 68)
     print("  ПЕСОЧНИЦА ТЕСТИРОВАНИЯ ПРОМПТОВ")
