@@ -283,6 +283,63 @@ for ln in lines:
 out = '\n'.join(res)
 report.append((f'«Источники»: удалено строк {n_del}, зачищено {n_strip}', 0))
 
+# ------------------------- 4-кватер. УРОВЕНЬ 2a: перестановка блоков в карточке
+# Цель: «Границы применимости» вплотную к речи, чтобы при нарезке на куски
+# утверждение и его ограничение не уезжали в разные чанки.
+# Порядок: речь → границы → численные → когда применять → источник → замечания.
+# Подзаголовки внутри блоков (── «Для 75%», «Стилистически», ✅/⚠️/❌ и т. п.)
+# группостартерами НЕ являются и едут вместе со своим родительским блоком.
+GROUP = [('SPEECH',  r'^\*\*Формулировка для речи'),
+         ('BOUNDS',  r'^\*\*Границы применимости'),
+         ('NUMBERS', r'^\*\*Численны'),
+         ('WHEN',    r'^\*\*Контекст применения'),
+         ('SOURCE',  r'^\*\*Источник'),
+         ('NOTES',   r'^\*\*Замечания/флаги')]
+ORDER = ['SPEECH', 'BOUNDS', 'NUMBERS', 'WHEN', 'SOURCE', 'NOTES']
+
+def starter(line):
+    for name, pat in GROUP:
+        if re.match(pat, line): return name
+    return None
+
+head2, rest2 = out.split('\n## Аргумент 1 ', 1)
+rest2 = '\n## Аргумент 1 ' + rest2
+pieces = re.split(r'(?m)(?=^## Аргумент )', rest2)
+lead, cards2 = pieces[0], pieces[1:]
+n_moved = 0
+
+for idx, card in enumerate(cards2):
+    lines = card.split('\n')
+    preface, groups, cur = [], {}, None
+    for ln in lines:
+        g = starter(ln)
+        if g:
+            cur = g
+            groups.setdefault(cur, []).append(ln)
+        elif cur:
+            groups[cur].append(ln)
+        else:
+            preface.append(ln)
+    if not groups:
+        continue
+    before = sorted(''.join(v).strip() for v in groups.values())
+    tail_sep = ''
+    # хвостовой разделитель карточки держим в конце
+    body = []
+    for g in ORDER:
+        if g in groups:
+            chunk = '\n'.join(groups[g]).strip('\n')
+            chunk = re.sub(r'\n*(^---\s*$)', '', chunk, flags=re.M).rstrip()
+            if chunk: body.append(chunk)
+    new = '\n'.join(preface).rstrip() + '\n\n' + '\n\n'.join(body) + '\n\n---\n'
+    after = sorted(''.join(v).strip() for v in groups.values())
+    assert before == after, f'карточка {idx+1}: набор блоков изменился'
+    if new != card: n_moved += 1
+    cards2[idx] = new
+
+out = head2 + lead + ''.join(cards2)
+report.append((f'Уровень 2a: переставлено карточек {n_moved}', 0))
+
 # ------------------------------------------------- 5. косметика пробелов
 out = re.sub(r'\n{4,}', '\n\n\n', out)
 out = re.sub(r'(?m)^ +$', '', out)
