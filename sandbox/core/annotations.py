@@ -194,6 +194,13 @@ def build_evidence(record: dict, annotation: dict) -> dict:
                 + ", ".join(retrieval_diagnosis["absent_from_base"][:8])
                 + ". Это пробел базы — модель взяла это не из ваших файлов."
             )
+        if retrieval_diagnosis.get("near_cut_uncertain"):
+            notes.append(
+                "У границы обрезки, доехало или нет — точно неизвестно: "
+                + ", ".join(retrieval_diagnosis["near_cut_uncertain"][:8])
+                + ". Потолок платформы установлен лишь как коридор 21–28 тыс. символов, "
+                "и эти слова лежат внутри него. Утверждать причину по ним нельзя."
+            )
         if retrieval_diagnosis.get("cut_by_preview_limit"):
             notes.append(
                 "Есть в файле, но НЕ доехало до модели из-за обрезки предпросмотра: "
@@ -281,19 +288,25 @@ def _diagnose_retrieval(record: dict, terms: list[str]) -> dict | None:
             full += " " + text.lower()
             delivered += " " + text[: item.get("chars") or len(text)].lower()
 
-        доехало, обрезано, нет_в_базе = [], [], []
+        # Точный потолок обрезки у платформы не установлен: по позициям
+        # увиденного он лежит между 21 и 28 тыс. символов. Поэтому термины
+        # из этой зоны нельзя объявлять «не доехавшими» — только «на границе».
+        UNCERTAIN_TO = 28000
+        доехало, обрезано, на_границе, нет_в_базе = [], [], [], []
         for term in terms:
             lowered = term.lower()
             if lowered in delivered:
                 доехало.append(term)
             elif lowered in full:
-                обрезано.append(term)
+                позиция = full.find(lowered)
+                (на_границе if позиция < UNCERTAIN_TO else обрезано).append(term)
             else:
                 нет_в_базе.append(term)
         return {
             "in_retrieved": доехало,
             "in_base_not_retrieved": [],
             "cut_by_preview_limit": обрезано,
+            "near_cut_uncertain": на_границе,
             "absent_from_base": нет_в_базе,
             "mode": "preview",
             "truncated_files": [

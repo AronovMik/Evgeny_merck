@@ -16,6 +16,19 @@ from .profiles import Profile
 from .prompt_builder import build_messages, build_system_prompt
 
 
+# Определение инструмента чтения файлов. Точного описания инструмента Langdock
+# не публикует — здесь минимальный вариант, нужный лишь для того, чтобы выдача
+# пришла в роли результата инструмента, как на платформе.
+KNOWLEDGE_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "read_files",
+        "description": "Прочитать файлы проекта.",
+        "parameters": {"type": "object", "properties": {}},
+    },
+}
+
+
 def gather_knowledge(profile: Profile, query: str) -> dict | None:
     """Готовит контекст из файлов проекта так же, как это делает Langdock.
 
@@ -117,13 +130,39 @@ def prepare(
     )
     messages = build_messages(built, user_message, history)
 
-    # База знаний проекта: ищем под конкретный вопрос и вкладываем найденное
-    # отдельным системным сообщением — тестируемый промпт остаётся нетронутым,
-    # а найденное видно в логе отдельной строкой.
+    # Файлы проекта приходят так же, как в Langdock: парой «модель запросила
+    # файлы → пришёл результат инструмента», а не системным блоком. Индикатор
+    # контекста Langdock показывает эту выдачу строкой Tool rows («Read file»),
+    # то есть структурно это результат инструмента. Роль сообщения модель
+    # различает, поэтому форма подачи здесь — часть симуляции, а не мелочь.
     retrieval = gather_knowledge(profile, user_message)
+    tools = None
     if retrieval and retrieval["text"]:
-        insert_at = 1 if messages and messages[0]["role"] == "system" else 0
-        messages.insert(insert_at, {"role": "system", "content": retrieval["text"]})
+        if retrieval["mode"] == "preview":
+            tools = [KNOWLEDGE_TOOL]
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "id": "call_knowledge",
+                            "type": "function",
+                            "function": {"name": "read_files", "arguments": "{}"},
+                        }
+                    ],
+                }
+            )
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": "call_knowledge",
+                    "content": retrieval["text"],
+                }
+            )
+        else:
+            insert_at = 1 if messages and messages[0]["role"] == "system" else 0
+            messages.insert(insert_at, {"role": "system", "content": retrieval["text"]})
 
     model = overrides.get("model") or profile.model or CONFIG.default_model
     temperature = overrides.get("temperature", profile.temperature)
@@ -143,6 +182,7 @@ def prepare(
         seed=seed,
         stream=stream,
         logprobs=want_logprobs,
+        tools=tools,
     )
 
     deviations = [dev.to_dict() for dev in built.deviations]
@@ -160,7 +200,9 @@ def prepare(
                             for f in обрезанные
                         )
                         + ". Хвосты этих файлов модель не видит вообще: то, что там написано, "
-                        "она выполнить не может по определению."
+                        "она выполнить не может по определению. Точный потолок платформы "
+                        "не установлен — по позициям увиденного он лежит между 21 и 28 тыс. "
+                        "символов, поэтому у самой границы вывод «не доехало» ненадёжен."
                     ),
                     "severity": "high",
                 }
