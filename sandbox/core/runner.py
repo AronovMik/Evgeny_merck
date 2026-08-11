@@ -135,12 +135,27 @@ def prepare(
     # контекста Langdock показывает эту выдачу строкой Tool rows («Read file»),
     # то есть структурно это результат инструмента. Роль сообщения модель
     # различает, поэтому форма подачи здесь — часть симуляции, а не мелочь.
+    #
+    # Читаются файлы ОДИН раз за диалог, на первом сообщении. Установлено
+    # наблюдением: «Read file (2)» не появляется ни при каком последующем
+    # вопросе. Поэтому пара вставляется сразу после первого сообщения
+    # пользователя и дальше едет в истории, а не дописывается каждый ход.
+    # На первом ходу это то же самое, что дописать в конец; со второго —
+    # принципиально другое: агент отвечает по тому, что прочитал в начале.
     retrieval = gather_knowledge(profile, user_message)
     tools = None
+    knowledge_turn = 0
+    knowledge_reread = True  # для поиска по фрагментам он идёт заново на каждый вопрос
     if retrieval and retrieval["text"]:
         if retrieval["mode"] == "preview":
             tools = [KNOWLEDGE_TOOL]
-            messages.append(
+            knowledge_reread = False
+            first_user = next(
+                (i for i, item in enumerate(messages) if item["role"] == "user"),
+                len(messages) - 1,
+            )
+            knowledge_turn = sum(1 for item in messages[: first_user + 1] if item["role"] == "user")
+            messages[first_user + 1 : first_user + 1] = [
                 {
                     "role": "assistant",
                     "content": None,
@@ -151,15 +166,13 @@ def prepare(
                             "function": {"name": "read_files", "arguments": "{}"},
                         }
                     ],
-                }
-            )
-            messages.append(
+                },
                 {
                     "role": "tool",
                     "tool_call_id": "call_knowledge",
                     "content": retrieval["text"],
-                }
-            )
+                },
+            ]
         else:
             insert_at = 1 if messages and messages[0]["role"] == "system" else 0
             messages.insert(insert_at, {"role": "system", "content": retrieval["text"]})
@@ -214,8 +227,11 @@ def prepare(
                     f"Файлы проекта поданы предпросмотром: {retrieval['documents']} документов, "
                     f"{retrieval['context_chars']} символов ушло в модель. Это правило Langdock — "
                     f"до 20 документов агент показывает файлы, поиск по фрагментам включается "
-                    f"с 21-го. Потолок предпросмотра платформа не публикует; наш подобран под "
-                    f"показания индикатора контекста и может отличаться от их."
+                    f"с 21-го. Выдача стоит после первого сообщения пользователя и на "
+                    f"последующих ходах не повторяется: на платформе счётчик «Read file» "
+                    f"остаётся на единице, сколько бы ходов ни прошло. Потолок предпросмотра "
+                    f"платформа не публикует; наш подобран под показания индикатора контекста "
+                    f"и может отличаться от их."
                 ),
                 "severity": "info",
             }
@@ -321,6 +337,8 @@ def prepare(
         # показывать ровно то, что модель видела. Без этого через неделю
         # невозможно отличить пробел в базе от промаха поиска.
         record["retrieval"] = {key: value for key, value in retrieval.items() if key != "text"}
+        record["retrieval"]["delivered_at_turn"] = knowledge_turn
+        record["retrieval"]["reread_each_turn"] = knowledge_reread
 
     return {"record": record, "body": body, "adaptations": adaptations, "built": built}
 

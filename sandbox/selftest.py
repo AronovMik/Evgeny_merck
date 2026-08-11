@@ -167,8 +167,15 @@ def main() -> int:
         check("поток для разбора Claude Code пишется", stream.exists())
         check("сводка собрана", digest.exists())
 
+        # Срез считается по накопленному потоку, а не по одному прогону:
+        # сверять с единицей нельзя — от прошлых запусков там уже есть записи.
         aggregate = request(f"{base}/api/annotations")
-        check("срез по замечаниям строится", aggregate["total"] == 1, f"категорий: {len(aggregate['by_category'])}")
+        check(
+            "срез по замечаниям строится",
+            aggregate["total"] >= 1
+            and any(item["id"] == "fact" for item in aggregate["by_category"]),
+            f"всего замечаний в потоке: {aggregate['total']}, категорий: {len(aggregate['by_category'])}",
+        )
 
         print("\n5. Возврат к прогону для доразметки")
         again = request(f"{base}/api/run/{run_id}")
@@ -193,15 +200,24 @@ def main() -> int:
         )
         retrieval = knowledge.get("retrieval") or {}
         check(
-            "7 документов → режим предпросмотра (правило Langdock: до 20 целиком)",
+            "7 документов → режим предпросмотра (правило Langdock: поиск с 21-го)",
             retrieval.get("mode") == "preview",
             f"режим: {retrieval.get('mode')}, документов: {retrieval.get('documents')}",
         )
         check(
-            "все файлы поданы целиком",
+            "все файлы попали в одну выдачу инструмента",
             len(retrieval.get("full_text_files", [])) == 7,
-            f"файлов целиком: {len(retrieval.get('full_text_files', []))}, "
+            f"файлов: {len(retrieval.get('full_text_files', []))}, "
             f"{retrieval.get('context_chars', 0) // 1024} КБ",
+        )
+        check(
+            "длинные файлы обрезаны с хвоста, доля доехавшего посчитана",
+            any(f.get("truncated") for f in retrieval.get("full_text_files", [])),
+            ", ".join(
+                f"{f['source'].split('/')[-1]} {int(f['delivered_share'] * 100)}%"
+                for f in retrieval.get("full_text_files", [])
+                if f.get("truncated")
+            ),
         )
         codes = [item["code"] for item in knowledge["prompt"]["deviations"]]
         check("способ подачи помечен отклонением", "knowledge_preview" in codes, ", ".join(codes))
@@ -209,6 +225,35 @@ def main() -> int:
             "системный промпт — только файл инструкций",
             len(knowledge["prompt"]["blocks"]) == 1
             and "medrep_prompt_v16" in knowledge["prompt"]["blocks"][0]["source"],
+        )
+        roles = [m["role"] for m in knowledge["request_body_redacted"]["messages"]]
+        check(
+            "на первом ходу: system → вопрос → запрос файлов → выдача",
+            roles == ["system", "user", "assistant", "tool"],
+            " → ".join(roles),
+        )
+
+        second = request(
+            f"{base}/api/preview",
+            {
+                "profile": "medrep-simulator",
+                "message": "Теперь дай разбор",
+                "history": [
+                    {"role": "user", "content": "Пациент на бисопрололе и амлодипине раздельно"},
+                    {"role": "assistant", "content": "Клинический случай …"},
+                ],
+            },
+        )
+        roles2 = [m["role"] for m in second["request_body_redacted"]["messages"]]
+        check(
+            "файлы читаются один раз за диалог, а не каждый ход",
+            roles2.count("tool") == 1 and roles2[:4] == ["system", "user", "assistant", "tool"],
+            " → ".join(roles2),
+        )
+        check(
+            "ход чтения зафиксирован в записи прогона",
+            (second.get("retrieval") or {}).get("delivered_at_turn") == 1
+            and (second.get("retrieval") or {}).get("reread_each_turn") is False,
         )
 
         print("\n8. Статика интерфейса")

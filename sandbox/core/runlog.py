@@ -335,12 +335,17 @@ def redact_body(body: dict) -> dict:
     дублировать его в теле запроса незачем.
     """
     clone = {k: v for k, v in body.items() if k != "messages"}
-    clone["messages"] = [
-        {
-            "role": message.get("role"),
-            "chars": len(message.get("content") or ""),
-            "preview": (message.get("content") or "")[:200],
-        }
-        for message in body.get("messages", [])
-    ]
+    rows = []
+    for message in body.get("messages", []):
+        text = message.get("content") or ""
+        row = {"role": message.get("role"), "chars": len(text), "preview": text[:200]}
+        # Запрос файлов виден в теле как сообщение без текста. Без пометки
+        # в логе не отличить его от пустого ответа модели.
+        calls = message.get("tool_calls") or []
+        if calls:
+            row["preview"] = "→ вызов инструмента: " + ", ".join(
+                call.get("function", {}).get("name", "?") for call in calls
+            )
+        rows.append(row)
+    clone["messages"] = rows
     return clone
