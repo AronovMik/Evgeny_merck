@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Устройство тренажёра Конкор</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; }
+  img, svg, video { max-width: 100%; }
+</style>
+</head>
+<body>
+<style>
+  :root {
+    --bg: #FBFBFC;
+    --surface: #FFFFFF;
+    --surface-2: #F1F4F6;
+    --ink: #17202A;
+    --muted: #5D6875;
+    --line: #D3D9E0;
+    --line-soft: #E6EAEF;
+    --accent: #0E6B60;
+    --accent-soft: #E2EFEC;
+    --plum: #6E2E55;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E141B;
+      --surface: #161F28;
+      --surface-2: #1D2832;
+      --ink: #E6EBF1;
+      --muted: #98A4B2;
+      --line: #2E3B49;
+      --line-soft: #232F3B;
+      --accent: #4FC6B3;
+      --accent-soft: #12312D;
+      --plum: #CB92B6;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0E141B;
+    --surface: #161F28;
+    --surface-2: #1D2832;
+    --ink: #E6EBF1;
+    --muted: #98A4B2;
+    --line: #2E3B49;
+    --line-soft: #232F3B;
+    --accent: #4FC6B3;
+    --accent-soft: #12312D;
+    --plum: #CB92B6;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 56px 24px 96px;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+
+  header { display: flex; flex-direction: column; gap: 14px; }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-size: clamp(30px, 4.6vw, 46px);
+    line-height: 1.12;
+    font-weight: 400;
+    margin: 0;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  .lede {
+    max-width: 66ch;
+    color: var(--muted);
+    font-size: 17px;
+    margin: 0;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 25px;
+    font-weight: 400;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  .section-note { max-width: 68ch; color: var(--muted); margin: 0; font-size: 15.5px; }
+
+  figure {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 26px 22px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-x: auto;
+  }
+
+  figure svg { display: block; width: 100%; min-width: 640px; height: auto; }
+
+  figcaption {
+    font-size: 14px;
+    color: var(--muted);
+    border-top: 1px solid var(--line-soft);
+    padding-top: 12px;
+    max-width: 76ch;
+  }
+
+  /* ---- SVG element styling (tokens, not literals) ---- */
+  .dgm { color: var(--ink); }
+  .box { fill: var(--surface-2); stroke: var(--line); stroke-width: 1; }
+  .box-key { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
+  .box-plain { fill: none; stroke: var(--line); stroke-width: 1; }
+  .frame { fill: none; stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+  .edge { stroke: var(--ink); stroke-width: 1.3; fill: none; opacity: 0.55; }
+  .edge-key { stroke: var(--accent); stroke-width: 2; fill: none; }
+  .head { fill: var(--ink); opacity: 0.55; }
+  .head-key { fill: var(--accent); }
+
+  text { font-family: var(--sans); fill: var(--ink); }
+  .t-node { font-size: 13px; font-weight: 600; }
+  .t-sub { font-size: 11.5px; fill: var(--muted); }
+  .t-file { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+  .t-edge { font-size: 10.5px; fill: var(--muted); font-style: italic; }
+  .t-group {
+    font-size: 10.5px; fill: var(--muted); font-weight: 700;
+    letter-spacing: 0.11em; text-transform: uppercase;
+  }
+  .t-key { fill: var(--accent); }
+
+  /* ---- file reference list ---- */
+  .files { display: grid; gap: 1px; background: var(--line-soft); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .file-row { background: var(--surface); padding: 14px 18px; display: grid; grid-template-columns: minmax(190px, 240px) 1fr; gap: 6px 26px; align-items: baseline; }
+  .file-row dt { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+  .file-row dd { margin: 0; color: var(--muted); font-size: 14.5px; }
+  .file-row .kb { display: block; font-family: var(--sans); font-size: 11px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-top: 3px; }
+
+  @media (max-width: 720px) {
+    .file-row { grid-template-columns: 1fr; }
+  }
+
+  /* ---- rules ---- */
+  .rules { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .rule { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .rule h3 { margin: 0; font-size: 16px; font-weight: 650; font-family: var(--sans); }
+  .rule p { margin: 0; font-size: 14.5px; color: var(--muted); }
+
+  code { font-family: var(--mono); font-size: 0.9em; background: var(--surface-2); padding: 1px 5px; border-radius: 3px; }
+
+  footer { color: var(--muted); font-size: 13.5px; border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Тренажёр кейсов для медицинских представителей · Merck Россия</div>
+    <h1>Устройство тренажёра Конкор</h1>
+    <p class="lede">
+      Агент собран на платформе Langdock из двух полей настройки и шести файлов базы знаний.
+      Файлы ведут себя по-разному: часть текста присутствует в каждом обращении целиком,
+      остальное подтягивается фрагментами под конкретный кейс. Из этого различия следует
+      почти всё в конструкции.
+    </p>
+  </header>
+
+  <section>
+    <div>
+      <h2>Два механизма, а не один список файлов</h2>
+      <p class="section-note">
+        Системный промт и приветствие — это поля настройки: их текст присутствует всегда и целиком.
+        Шесть файлов базы знаний устроены иначе: агент вытягивает из них отдельные фрагменты,
+        подходящие под запрос. Какой именно фрагмент всплывёт — заранее не известно.
+      </p>
+    </div>
+
+    <figure>
+      <svg class="dgm" viewBox="0 0 960 300" role="img"
+           aria-label="Схема состава агента: слева поля настройки Instructions и Description, которые загружаются целиком при каждом обращении; справа шесть файлов базы знаний, из которых подтягиваются отдельные фрагменты; оба потока сходятся в агенте по центру.">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <polygon class="head" points="0,1 10,5 0,9" />
+          </marker>
+        </defs>
+
+        <!-- left: always in context -->
+        <text class="t-group" x="40" y="34">Всегда в контексте · целиком</text>
+        <rect class="frame" x="30" y="48" width="270" height="164" rx="3" />
+
+        <rect class="box" x="48" y="68" width="234" height="56" rx="3" />
+        <text class="t-file" x="64" y="92">Instructions</text>
+        <text class="t-sub" x="64" y="110">системный промт · 9 943 знака</text>
+
+        <rect class="box" x="48" y="140" width="234" height="56" rx="3" />
+        <text class="t-file" x="64" y="164">Description</text>
+        <text class="t-sub" x="64" y="182">приветствие · 494 знака</text>
+
+        <line class="edge" x1="300" y1="130" x2="392" y2="130" marker-end="url(#a1)" />
+        <text class="t-edge" x="346" y="120" text-anchor="middle">весь текст,</text>
+        <text class="t-edge" x="346" y="150" text-anchor="middle">каждый ход</text>
+
+        <!-- centre: agent -->
+        <rect class="box-key" x="400" y="98" width="160" height="64" rx="3" />
+        <text class="t-node t-key" x="480" y="126" text-anchor="middle">Агент</text>
+        <text class="t-sub" x="480" y="146" text-anchor="middle">Sonnet · Langdock</text>
+
+        <line class="edge" x1="660" y1="130" x2="568" y2="130" marker-end="url(#a1)" />
+        <text class="t-edge" x="614" y="120" text-anchor="middle">фрагменты</text>
+        <text class="t-edge" x="614" y="150" text-anchor="middle">под кейс</text>
+
+        <!-- right: retrieved -->
+        <text class="t-group" x="670" y="34">Извлекается по запросу · фрагментами</text>
+        <rect class="frame" x="660" y="48" width="270" height="222" rx="3" />
+
+        <rect class="box" x="678" y="62" width="234" height="30" rx="3" />
+        <text class="t-file" x="694" y="82">typology_v2.md</text>
+        <rect class="box" x="678" y="96" width="234" height="30" rx="3" />
+        <text class="t-file" x="694" y="116">quality_criteria.md</text>
+        <rect class="box" x="678" y="130" width="234" height="30" rx="3" />
+        <text class="t-file" x="694" y="150">patient_portraits.md</text>
+        <rect class="box" x="678" y="164" width="234" height="30" rx="3" />
+        <text class="t-file" x="694" y="184">arguments_table.md</text>
+        <rect class="box" x="678" y="198" width="234" height="30" rx="3" />
+        <text class="t-file" x="694" y="218">competitive_messaging.md</text>
+        <rect class="box" x="678" y="232" width="234" height="30" rx="3" />
+        <text class="t-file" x="694" y="252">mandatory_args.md</text>
+      </svg>
+      <figcaption>
+        Разница не техническая, а практическая. Правило, записанное в промт, действует гарантированно.
+        Правило, записанное в файл базы, действует, только если нужный фрагмент всплывёт — поэтому
+        речевое утверждение и его ограничение обязаны лежать в файле рядом, в пределах одного фрагмента.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div>
+      <h2>Что происходит за один кейс</h2>
+      <p class="section-note">
+        Диалог двухфазный: сначала агент выдаёт кейс и останавливается, затем принимает
+        один развёрнутый ответ медпреда и разбирает его. Файлы включаются на разных фазах —
+        и именно поэтому эталон и разбор опираются на разные наборы данных.
+      </p>
+    </div>
+
+    <figure>
+      <svg class="dgm" viewBox="0 0 960 700" role="img"
+           aria-label="Схема прохождения одного кейса: медпред запрашивает кейс; на первой фазе агент собирает его, опираясь на typology_v2, quality_criteria и patient_portraits; выдаёт кейс; получает один ответ медпреда; на второй фазе строит разбор, опираясь на arguments_table и competitive_messaging; перед выдачей эталона обязательно сверяется с ядром ситуации в mandatory_args.">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <polygon class="head" points="0,1 10,5 0,9" />
+          </marker>
+          <marker id="a2k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <polygon class="head-key" points="0,1 10,5 0,9" />
+          </marker>
+        </defs>
+
+        <!-- 1. request -->
+        <rect class="box-plain" x="320" y="30" width="320" height="44" rx="3" />
+        <text class="t-node" x="480" y="58" text-anchor="middle">Медпред: «сгенерируй кейс»</text>
+        <line class="edge" x1="480" y1="74" x2="480" y2="100" marker-end="url(#a2)" />
+
+        <!-- inputs to phase 1 -->
+        <rect class="box" x="40" y="107" width="212" height="30" rx="3" />
+        <text class="t-file" x="56" y="127">typology_v2.md</text>
+        <rect class="box" x="40" y="145" width="212" height="30" rx="3" />
+        <text class="t-file" x="56" y="165">quality_criteria.md</text>
+        <rect class="box" x="40" y="183" width="212" height="30" rx="3" />
+        <text class="t-file" x="56" y="203">patient_portraits.md</text>
+
+        <line class="edge" x1="252" y1="122" x2="314" y2="122" marker-end="url(#a2)" />
+        <line class="edge" x1="252" y1="160" x2="314" y2="160" marker-end="url(#a2)" />
+        <line class="edge" x1="252" y1="198" x2="314" y2="198" marker-end="url(#a2)" />
+
+        <!-- 2. phase 1 -->
+        <rect class="box" x="320" y="104" width="320" height="110" rx="3" />
+        <text class="t-group" x="340" y="126">Фаза 1</text>
+        <text class="t-node" x="340" y="150">Сборка кейса</text>
+        <text class="t-sub" x="340" y="172">пропорции 60 / 25 / 15, ротация подтипов,</text>
+        <text class="t-sub" x="340" y="190">антиповтор по ≥3 осям из 5</text>
+        <line class="edge" x1="480" y1="214" x2="480" y2="248" marker-end="url(#a2)" />
+
+        <!-- 3. case out -->
+        <rect class="box-plain" x="320" y="252" width="320" height="60" rx="3" />
+        <text class="t-node" x="480" y="276" text-anchor="middle">Кейс</text>
+        <text class="t-sub" x="480" y="296" text-anchor="middle">портрет · профиль врача · возражение</text>
+        <line class="edge" x1="480" y1="312" x2="480" y2="346" marker-end="url(#a2)" />
+
+        <!-- 4. medrep answer -->
+        <rect class="box-plain" x="320" y="350" width="320" height="44" rx="3" />
+        <text class="t-node" x="480" y="378" text-anchor="middle">Один развёрнутый ответ медпреда</text>
+        <line class="edge" x1="480" y1="394" x2="480" y2="428" marker-end="url(#a2)" />
+
+        <!-- inputs to phase 2 -->
+        <rect class="box" x="708" y="443" width="212" height="30" rx="3" />
+        <text class="t-file" x="724" y="463">arguments_table.md</text>
+        <rect class="box" x="708" y="489" width="212" height="30" rx="3" />
+        <text class="t-file" x="724" y="509">competitive_messaging.md</text>
+
+        <line class="edge" x1="708" y1="458" x2="646" y2="458" marker-end="url(#a2)" />
+        <line class="edge" x1="708" y1="504" x2="646" y2="504" marker-end="url(#a2)" />
+
+        <!-- 5. phase 2 -->
+        <rect class="box" x="320" y="432" width="320" height="110" rx="3" />
+        <text class="t-group" x="340" y="454">Фаза 2</text>
+        <text class="t-node" x="340" y="478">Разбор ответа</text>
+        <text class="t-sub" x="340" y="500">все применимые опоры, включая упущенные,</text>
+        <text class="t-sub" x="340" y="518">рамка «расширение арсенала», не оценка</text>
+
+        <!-- gate -->
+        <line class="edge-key" x1="480" y1="542" x2="480" y2="580" marker-end="url(#a2k)" />
+        <text class="t-edge t-key" x="494" y="566">гейт: сверка с ядром ситуации</text>
+
+        <!-- mandatory args -->
+        <rect class="box-key" x="708" y="595" width="212" height="30" rx="3" />
+        <text class="t-file t-key" x="724" y="615">mandatory_args.md</text>
+        <line class="edge-key" x1="708" y1="610" x2="646" y2="610" marker-end="url(#a2k)" />
+        <text class="t-edge t-key" x="677" y="642" text-anchor="middle">ядро — целиком</text>
+
+        <!-- 6. etalon -->
+        <rect class="box-key" x="320" y="584" width="320" height="66" rx="3" />
+        <text class="t-node t-key" x="340" y="610">Эталонный ответ</text>
+        <text class="t-sub" x="340" y="632">ядро ситуации целиком + до 3 опор расширения</text>
+      </svg>
+      <figcaption>
+        Ключевой узел — гейт перед эталоном. Разбор перечисляет все применимые опоры, эталон
+        отбирает из них столько, сколько медпред успеет произнести в кабинете. Без сверки с ядром
+        отбор шёл бы по усмотрению модели, и разбор систематически выходил бы содержательнее эталона —
+        притом что врачу медпред понесёт именно эталон.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div>
+      <h2>Шесть файлов базы</h2>
+      <p class="section-note">Общий объём — 428 КБ. Каждый отвечает за свой вопрос.</p>
+    </div>
+
+    <dl class="files">
+      <div class="file-row">
+        <dt>typology_v2.md<span class="kb">59,3 КБ</span></dt>
+        <dd>Из чего кейс собирается. Категории кейсов, типология продуктовых решений, возражений, нозологий и профилей врача, матрица допустимых сочетаний, приоритеты генерации.</dd>
+      </div>
+      <div class="file-row">
+        <dt>quality_criteria.md<span class="kb">25,9 КБ</span></dt>
+        <dd>Получился кейс хорошим или нет. Признаки целевого, пограничного и нецелевого кейса, критерии качества эталона, чеклист перед выдачей.</dd>
+      </div>
+      <div class="file-row">
+        <dt>arguments_table.md<span class="kb">160,2 КБ</span></dt>
+        <dd>Доказательная база: 23 карточки аргументов. В каждой — формулировка для речи, границы применимости, цифры, когда применять, источник. Порядок блоков подчинён тому, чтобы утверждение и его ограничение попадали в один извлекаемый фрагмент.</dd>
+      </div>
+      <div class="file-row">
+        <dt>patient_portraits.md<span class="kb">67,9 КБ</span></dt>
+        <dd>Портреты целевых пациентов по четырём препаратам портфеля, с выдержками из материалов Мерк и поправками по первоисточникам.</dd>
+      </div>
+      <div class="file-row">
+        <dt>competitive_messaging.md<span class="kb">68,0 КБ</span></dt>
+        <dd>Утверждённые формулировки для сравнений с конкурентами. Отдельный раздел перечисляет, для чего утверждённой формулировки нет — там агент обязан промолчать, а не сочинить.</dd>
+      </div>
+      <div class="file-row">
+        <dt>mandatory_args.md<span class="kb">46,6 КБ</span></dt>
+        <dd>Что обязано прозвучать. 16 клинических ситуаций, в каждой ядро отделено от расширения. Единственный файл, по которому проверяется готовый эталон.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section>
+    <div>
+      <h2>Три правила, на которых держится конструкция</h2>
+    </div>
+    <div class="rules">
+      <div class="rule">
+        <h3>Утверждение и его граница — рядом</h3>
+        <p>Если речевая формулировка лежит в одном месте файла, а условие её применимости — в другом, агент выдаёт формулировку без условия. Извлечение работает фрагментами, и второй фрагмент может не всплыть.</p>
+      </div>
+      <div class="rule">
+        <h3>Ядро отдельно от расширения</h3>
+        <p>Ядро ситуации входит в эталон целиком, расширение — до трёх самых весомых опор под конкретного пациента. Полный перечень уходит в разбор. Иначе эталон либо неполон, либо не произносим за 90 секунд.</p>
+      </div>
+      <div class="rule">
+        <h3>Версия не правится задним числом</h3>
+        <p>Каждое содержательное изменение промта — новый файл с новым номером. Правило появилось после того, как одна версия менялась на месте четыре раза и перестало быть понятно, что именно загружено в агент.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Состояние на 12 августа 2026 года. Instructions — <code>medrep_prompt_v21.md</code>,
+    база знаний — шесть файлов, приветствие — 494 знака в поле Description.
+  </footer>
+
+</div>
+</body>
+</html>
