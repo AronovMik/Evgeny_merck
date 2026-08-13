@@ -15,6 +15,8 @@
 
 | Файл | Тема | Год | Источник |
 |---|---|---|---|
+| [`ESC_2024_CCS.md`](./ESC_2024_CCS.md) | Chronic coronary syndromes | 2024 | ESC, endorsed by EACTS *(подтянут из основной библиотеки/main)* |
+| [`ACC-AHA_2023_chronic-coronary-disease.md`](./ACC-AHA_2023_chronic-coronary-disease.md) | Chronic coronary disease | 2023 | AHA/ACC/ACCP/ASPC/NLA/PCNA *(подтянут из основной библиотеки/main)* |
 | [`ACC-AHA_2026_dyslipidemia.md`](./ACC-AHA_2026_dyslipidemia.md) | Управление дислипидемией | 2026 | ACC/AHA/AACVPR/ABC/ACPM/ADA/AGS/APhA/ASPC/NLA/PCNA; J Am Coll Cardiol. 2026;87(19):2624–2757; doi: 10.1016/j.jacc.2025.11.016; copublished in Circulation |
 
 ---
