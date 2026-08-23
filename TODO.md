@@ -8,6 +8,9 @@
 
 ## Active
 
+- [ ] 🔴 **Бета-блокаторы в психиатрии — докачать супплементы.** Не приложен ни один: Rasmussen/Holt Table S1 + S3A (10.1016/j.ahj.2025.08.005); Riemer Data Supplement, Tables S11–S14 + Expanded Results 1–3 (10.1161/HYPERTENSIONAHA.120.16590); Molero S1 Text p.2, S2 Table, S2 Fig (10.1371/journal.pmed.1004164); BETAMI-DANBLOCK Tables S1–S5, Fig S1–S2 (10.1093/eurheartj/ehag200). Полный перечень — `outputs/gaps.md`, п. 1.
+- [ ] 🟡 **Бета-блокаторы в психиатрии — добрать 10 отсутствующих статей** ожидаемого списка: Leissner (REDUCE-AMI QoL), Archer, Steenen, Eddin, Bornand, Zaidi, El-Nabarawi, Armstrong, Zhang, Ko. Из-за их отсутствия 6 из 13 блоков целевых вопросов не выполнены.
+- [ ] 🟢 **Бета-блокаторы в психиатрии — сверить позиции «ТРЕБУЕТ ВИЗУАЛЬНОЙ ПРОВЕРКИ»** по оригиналам (`outputs/gaps.md`, п. 3); отдельно — глифы неравенств в Boyce 2021 Table 1, где рендер PDF выполнить не удалось.
 - [ ] 🔴 **Евгений (вне Claude):** в GitHub Settings → Branches → Default branch переключить с `claude/setup-concor-repo-y5YDu` на `main`. После этого сообщить в библиотечной сессии — Claude удалит старую ветку и продолжит работу прямо на `main`.
 - [ ] 🟢 Ревизия архитектурной модели «main как библиотека» — 2026-07-01. Критерии перехода на trunk-based — в `decisions/2026-05-18_main-as-library-model.md`.
 - [ ] 🟡 Перенести оставшиеся чаты из claude.ai в `archive/claude-chats/` — по мере присылки Евгением.
