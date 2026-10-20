@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Адборд БАБ + ДГП-БКК — макеты v2</title>
+<style>
+:root {
+  --bg: #f5f7fa;
+  --ink: #252a31;
+  --muted: #5b6470;
+  --blue: #0d5a8c;
+  --blue-dark: #0b4a74;
+  --cyan: #0a9fd6;
+  --yellow: #f2b627;
+  --callout: #e5eff5;
+  --note: #fdf5dc;
+  --note-line: #e3a91c;
+  --line: #d9dfe6;
+  --ok: #e3f1e8;
+  --ok-ink: #2a7448;
+  --warn: #fbefd5;
+  --warn-ink: #8f5c00;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #c9ced6; font-family: "Inter", "Arial", sans-serif; color: var(--ink); }
+.slide {
+  width: 1600px; height: 900px; background: var(--bg); position: relative;
+  padding: 58px 96px 34px; display: flex; flex-direction: column; gap: 18px;
+  margin: 0 auto 24px; overflow: hidden;
+}
+.tag { position: absolute; top: 20px; right: 32px; font-size: 14px; color: var(--muted); letter-spacing: .02em; }
+.tag.backup { color: var(--warn-ink); font-weight: 600; }
+h1 { font-size: 40px; line-height: 1.16; font-weight: 700; color: var(--blue); max-width: 1380px; }
+.lead { font-size: 23px; line-height: 1.4; max-width: 1380px; }
+.sub { font-size: 21px; color: var(--muted); line-height: 1.35; }
+.foot { margin-top: auto; font-size: 13.5px; color: var(--muted); line-height: 1.45; display: grid; gap: 2px; }
+b, strong { font-weight: 700; }
+.card { background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(20,40,60,.08); padding: 20px 24px; }
+.card.top { border-top: 6px solid var(--blue); }
+.callout { background: var(--callout); border-left: 6px solid var(--blue); border-radius: 0 10px 10px 0; padding: 18px 26px; font-size: 21px; line-height: 1.4; }
+.note { background: var(--note); border-left: 6px solid var(--note-line); border-radius: 0 10px 10px 0; padding: 14px 26px; font-size: 21px; line-height: 1.4; }
+.dark { background: var(--blue-dark); color: #fff; border-radius: 14px; padding: 24px 28px; }
+.pill { display: inline-block; border-radius: 999px; padding: 5px 16px; font-weight: 700; font-size: 19px; line-height: 1.2; white-space: nowrap; }
+.pill.bab { background: var(--blue-dark); color: #fff; }
+.pill.dhp { background: var(--cyan); color: #fff; }
+.pill.raas { background: var(--yellow); color: #2b2100; }
+.capsule { display: inline-flex; gap: 6px; padding: 5px; border: 3px solid #7f8a96; border-radius: 999px; background: #fff; }
+.src { font-size: 16px; font-weight: 700; color: var(--blue); letter-spacing: .01em; }
+.ph { background: #ffe6a8; padding: 0 6px; border-radius: 4px; font-weight: 600; }
+
+/* slide 1 */
+.cards4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.cards4 .n { font-size: 32px; font-weight: 700; color: var(--blue); }
+.cards4 h3 { font-size: 23px; margin: 8px 0 8px; }
+.cards4 p { font-size: 20px; line-height: 1.38; color: #3a414b; }
+
+/* slide 2 */
+.cols2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 28px; }
+.colhead { font-size: 17px; font-weight: 700; color: var(--blue); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 10px; }
+.rec { padding: 14px 20px; }
+.rec p { font-size: 19px; line-height: 1.35; margin-top: 4px; }
+.stack { display: grid; gap: 10px; }
+.diverge { border: 2px dashed var(--note-line); background: #fffaf0; }
+.diverge .src { color: var(--warn-ink); }
+
+/* slide 3 */
+.branches { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.branch { display: grid; gap: 12px; align-content: start; }
+.cond { border-radius: 10px; padding: 14px 22px; font-size: 22px; font-weight: 700; }
+.cond.high { background: var(--blue); color: #fff; }
+.cond.low { background: #dfe5eb; color: #35404c; }
+.arrow { text-align: center; font-size: 30px; color: #8796a6; line-height: 1; }
+.result { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 21px; font-weight: 600; }
+.branch ul { list-style: none; display: grid; gap: 8px; }
+.branch li { font-size: 20px; line-height: 1.38; padding-left: 18px; position: relative; }
+.branch li::before { content: ""; position: absolute; left: 0; top: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--blue); }
+
+/* slide 4 */
+table.var { width: 100%; border-collapse: separate; border-spacing: 0 10px; font-size: 19.5px; }
+table.var th { text-align: left; font-size: 15.5px; color: var(--muted); font-weight: 700; padding: 0 12px 2px; line-height: 1.25; vertical-align: bottom; }
+table.var td { background: #fff; padding: 16px 12px; line-height: 1.3; vertical-align: middle; }
+table.var td:first-child { border-radius: 10px 0 0 10px; font-size: 30px; font-weight: 700; color: var(--blue); text-align: center; width: 64px; }
+table.var td:last-child { border-radius: 0 10px 10px 0; }
+td.okc { background: var(--ok) !important; color: var(--ok-ink); font-weight: 600; }
+td.wc { background: var(--warn) !important; color: var(--warn-ink); font-weight: 600; }
+.legend { display: flex; gap: 26px; font-size: 16px; color: var(--muted); align-items: center; }
+.sw { display: inline-block; width: 18px; height: 18px; border-radius: 4px; border: 1px solid #b9c2cc; vertical-align: -2px; margin-right: 6px; }
+
+/* slide 5 */
+.study { display: grid; grid-template-columns: 1.25fr 1fr; gap: 28px; align-items: start; }
+.grp { display: grid; grid-template-columns: 170px 1fr; align-items: center; gap: 12px; font-size: 19px; font-weight: 600; margin-bottom: 12px; }
+.res { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; text-align: center; }
+.res .lbl { font-size: 17px; color: var(--muted); }
+.res .big { font-size: 40px; font-weight: 700; color: var(--blue); }
+.res .big.grey { color: #5e7a91; }
+.small { font-size: 17px; color: var(--muted); margin-top: 10px; }
+
+/* slide 6 */
+.crit { display: grid; grid-template-columns: 1.75fr 1fr; gap: 26px; }
+.crit ol { list-style: none; display: grid; gap: 12px; counter-reset: c; }
+.crit ol > li { background: #fff; border-radius: 10px; padding: 14px 20px 14px 66px; position: relative; font-size: 20.5px; line-height: 1.34; counter-increment: c; box-shadow: 0 1px 3px rgba(20,40,60,.07); }
+.crit ol > li::before { content: counter(c); position: absolute; left: 20px; top: 14px; width: 30px; height: 30px; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 700; font-size: 17px; display: grid; place-items: center; }
+.qs h3 { font-size: 22px; margin-bottom: 14px; }
+.qs ul { list-style: none; display: grid; gap: 14px; }
+.qs li { font-size: 21px; line-height: 1.38; padding-left: 20px; position: relative; }
+.qs li::before { content: "?"; position: absolute; left: 0; top: 0; font-weight: 700; color: #9cc9e6; }
+
+/* slide 7 */
+.notA { display: grid; grid-template-columns: 1.7fr 1fr; gap: 26px; align-items: start; }
+.notA ul.no { list-style: none; display: grid; gap: 9px; }
+.notA ul.no li { background: #fff; border-radius: 9px; padding: 11px 18px 11px 46px; font-size: 19px; line-height: 1.32; position: relative; }
+.notA ul.no li::before { content: "×"; position: absolute; left: 17px; top: 8px; font-size: 22px; font-weight: 700; color: #b0423f; }
+.unk { background: var(--warn); border-radius: 12px; padding: 20px 24px; }
+.unk h3 { font-size: 21px; color: var(--warn-ink); margin-bottom: 12px; }
+.unk ul { list-style: none; display: grid; gap: 12px; }
+.unk li { font-size: 20px; line-height: 1.38; }
+
+/* backup */
+.quotes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.quotes .card p { font-size: 19.5px; line-height: 1.4; margin-top: 6px; }
+table.bl { border-collapse: collapse; width: 100%; font-size: 19px; background: #fff; border-radius: 10px; overflow: hidden; }
+table.bl th, table.bl td { padding: 12px 16px; border-bottom: 1px solid var(--line); text-align: left; }
+table.bl th { font-size: 16px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide" id="s1">
+  <span class="tag">Черновик v2 · адборд · не для полевого использования</span>
+  <h1>Состав фиксированной комбинации выводится из ведущей клинической задачи</h1>
+  <p class="lead">Фиксированная комбинация рациональна, когда каждый её компонент работает на ведущую задачу пациента, дозы уже подобраны, а схема остаётся <b>управляемой</b></p>
+  <div class="cards4">
+    <div class="card top"><div class="n">1</div><h3>Ведущая задача</h3><p>Что ведущее у этого пациента: симптомы ишемии или контроль АД и прогноз?</p></div>
+    <div class="card top"><div class="n">2</div><h3>Вклад компонентов</h3><p>Работает ли каждый компонент таблетки на эту задачу?</p></div>
+    <div class="card top"><div class="n">3</div><h3>Дозы и переносимость</h3><p>Подобраны ли дозы на монокомпонентах и совпадают ли с дозировками FDC?</p></div>
+    <div class="card top"><div class="n">4</div><h3>Управляемость</h3><p>Можно ли скорректировать препарат с другой целью, не меняя остальные?</p></div>
+  </div>
+  <div class="callout"><b>Рабочее определение.</b> Рациональная фиксированная комбинация — клинически обоснованная для конкретного пациента, не обязательно единственно возможная. Упрощение схемы само по себе её не обосновывает¹</div>
+  <div class="foot"><span>FDC — фиксированная комбинация (fixed-dose combination)</span><span>1. European Medicines Agency. Guideline on clinical development of fixed combination medicinal products. EMA/CHMP/158268/2017</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide" id="s2">
+  <span class="tag">Черновик v2 · адборд · не для полевого использования</span>
+  <h1>Рекомендации обосновывают пару БАБ + ДГП-БКК и упрощение схемы, но не говорят, какую пару фиксировать</h1>
+  <div class="cols2">
+    <div>
+      <div class="colhead">Пара БАБ + ДГП-БКК при стенокардии</div>
+      <div class="stack">
+        <div class="card rec"><span class="src">КР МЗ РФ, стабильная ИБС 2024¹ · ЕОК I C; УУР C, УДД 5</span><p>Стенокардия III–IV ФК: при отсутствии противопоказаний — сразу БАБ + ДГП-БКК для достижения ФК I</p></div>
+        <div class="card rec"><span class="src">КР МЗ РФ, стабильная ИБС 2024¹ · табл. ПА3-5</span><p>Стандартная терапия, шаг 2: БАБ + ДГП-БКК</p></div>
+        <div class="card rec"><span class="src">ESC 2024² · IIa B</span><p>Симптомы не контролируются монотерапией БАБ или БКК — следует рассмотреть БАБ + ДГП-БКК</p></div>
+        <div class="card rec"><span class="src">КР МЗ РФ, АГ 2024³ · ЕОК/ЕОАГ I A; УУР А, УДД 1</span><p>Пациентам с АГ и симптомами стенокардии рекомендуются ББ и/или АК</p></div>
+      </div>
+    </div>
+    <div>
+      <div class="colhead">Фиксированная форма</div>
+      <div class="stack">
+        <div class="card rec"><span class="src">ESC 2024² · I B</span><p>Упрощение схемы, в том числе с помощью фиксированных комбинаций, рекомендуется для повышения приверженности</p></div>
+        <div class="card rec diverge"><span class="src">Расхождение КР МЗ РФ и ESC</span><p>КР: при III–IV ФК пара назначается сразу. ESC: после неуспеха монотерапии; вопрос о стартовой комбинации ESC считает открытым</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="note">Какую пару класть в одну таблетку, рекомендации не говорят. <b>Это вопрос к совету</b></div>
+  <div class="foot">
+    <span>БАБ, ББ — бета-адреноблокаторы; (ДГП-)БКК, АК — (дигидропиридиновые) блокаторы кальциевых каналов; ФК — функциональный класс; ЕОК — класс рекомендации ESC; УУР / УДД — уровень убедительности рекомендаций / достоверности доказательств</span>
+    <span>1. Барбараш О.Л. и соавт. Стабильная ишемическая болезнь сердца. Клинические рекомендации 2024. Российский кардиологический журнал. 2024;29(9):6110. doi:10.15829/1560-4071-2024-6110</span>
+    <span>2. Vrints C, et al. 2024 ESC Guidelines for the management of chronic coronary syndromes. Eur Heart J. 2024;45:3415–3537. doi:10.1093/eurheartj/ehae177</span>
+    <span>3. Кобалава Ж.Д. и соавт. Артериальная гипертензия у взрослых. Клинические рекомендации 2024. Российский кардиологический журнал. 2024;29(9):6117. doi:10.15829/1560-4071-2024-6117</span>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" id="s3">
+  <span class="tag">Черновик v2 · адборд · не для полевого использования</span>
+  <h1>При стенокардии уровень АД определяет, какой препарат станет партнёром БАБ</h1>
+  <div class="branches">
+    <div class="branch">
+      <div class="cond high">АД выше целевого: сопутствующая АГ</div>
+      <div class="arrow">↓</div>
+      <div class="card result"><span class="pill bab">БАБ</span>+<span class="pill dhp">ДГП-БКК</span></div>
+      <ul>
+        <li>КР ИБС 2024¹: БКК рекомендуется назначать при сочетании стабильной стенокардии с АГ</li>
+        <li>КР АГ 2024², прил. Б4: при АГ и ИБС к иАПФ (БРА) + ББ при стенокардии добавляется ДГП-АК</li>
+      </ul>
+    </div>
+    <div class="branch">
+      <div class="cond low">АД пониженное</div>
+      <div class="arrow">↓</div>
+      <div class="card result" style="flex-direction:column; align-items:flex-start; gap:10px"><div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap"><span class="pill bab">БАБ</span><span>в низкой дозе (или не-ДГП-БКК в низкой дозе)</span></div><div style="font-weight:500; font-size:19.5px; line-height:1.38">Шаг 2: заменить на ивабрадин*, ранолазин или триметазидин; добавить к шагу 1 — если АД не снижается ниже исходного</div></div>
+      <ul>
+        <li>КР ИБС 2024¹, табл. ПА3-5, колонка «пониженное АД»</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">Снижение АД до целевых значений — часть устранения приступов стенокардии у пациентов с АГ и ИБС¹. <b>АГ здесь не отдельная цель, а условие выбора второго антиангинального компонента</b></div>
+  <div class="foot">
+    <span>* Расхождение: ESC 2024 — ивабрадин как дополнительная терапия при ФВ ЛЖ &gt;40% без клинической СН не рекомендован (III B); в КР МЗ РФ ивабрадин — препарат 2-й линии</span>
+    <span>1. Барбараш О.Л. и соавт. Стабильная ИБС. КР 2024. Российский кардиологический журнал. 2024;29(9):6110</span>
+    <span>2. Кобалава Ж.Д. и соавт. Артериальная гипертензия у взрослых. КР 2024. Российский кардиологический журнал. 2024;29(9):6117</span>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide" id="s4">
+  <span class="tag">Черновик v2 · адборд · не для полевого использования</span>
+  <h1>Вариант А разводит по разным таблеткам препараты с разными целями: симптомы и прогноз</h1>
+  <p class="sub">Условный пациент: БАБ + ДГП-БКК — для устранения симптомов; блокатор РААС — для профилактики ССО при АГ (ЕОК I A; УУР C, УДД 5)¹</p>
+  <table class="var">
+    <thead><tr>
+      <th></th><th>Таблетка 1 (FDC)</th><th>Таблетка 2</th><th>Коррекция блокатора РААС<br>(K⁺, креатинин, гипотензия, кашель)</th><th>Брадикардия<br>на БАБ</th><th>Отёки<br>на амлодипине</th><th>Молекула и доза<br>блокатора РААС</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>А</td><td><span class="capsule"><span class="pill bab">БАБ</span><span class="pill dhp">ДГП-БКК</span></span></td><td><span class="capsule"><span class="pill raas">Блокатор РААС</span></span></td><td class="okc">Меняется только таблетка 2</td><td class="wc">Меняется FDC</td><td class="wc">Меняется FDC</td><td class="okc">Выбор свободный</td></tr>
+      <tr><td>Б</td><td><span class="capsule"><span class="pill bab">БАБ</span><span class="pill raas">Блокатор РААС</span></span></td><td><span class="capsule"><span class="pill dhp">ДГП-БКК</span></span></td><td class="wc">FDC заменяют монопрепаратом БАБ</td><td class="wc">Меняется FDC</td><td class="okc">Меняется таблетка 2</td><td class="wc">Ограничен дозировками FDC</td></tr>
+      <tr><td>В</td><td><span class="capsule"><span class="pill dhp">ДГП-БКК</span><span class="pill raas">Блокатор РААС</span></span></td><td><span class="capsule"><span class="pill bab">БАБ</span></span></td><td class="wc">Меняется FDC</td><td class="okc">Меняется таблетка 2</td><td class="wc">Меняется FDC</td><td class="wc">Ограничен дозировками FDC</td></tr>
+    </tbody>
+  </table>
+  <div class="legend"><span><span class="sw" style="background:var(--ok)"></span>таблетка FDC не меняется</span><span><span class="sw" style="background:var(--warn)"></span>FDC придётся заменить, или она ограничивает выбор</span></div>
+  <div class="note">Клиническое рассуждение о схеме, а не результаты исследований. <b>Прямых сравнений вариантов А, Б и В нет</b></div>
+  <div class="foot">
+    <span>РААС — ренин-ангиотензин-альдостероновая система; ССО — сердечно-сосудистые осложнения</span>
+    <span>1. Барбараш О.Л. и соавт. Стабильная ИБС. КР 2024. Российский кардиологический журнал. 2024;29(9):6110 — разделы 3.1.2.1 (устранение симптомов) и 3.1.2.2 (профилактика ССО)</span>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" id="s5">
+  <span class="tag">Черновик v2 · адборд · не для полевого использования</span>
+  <h1>Фиксация антиангинальной пары на фоне иАПФ сопровождалась уменьшением частоты приступов стенокардии</h1>
+  <p class="sub">Скибицкий и соавт., 2015¹ · открытое РКИ · n=61 · АГ + стабильная стенокардия II–III ФК + метаболический синдром · 12 недель</p>
+  <div class="study">
+    <div class="card">
+      <div class="grp"><span>Группа 1, n=30</span><span><span class="capsule"><span class="pill bab">бисопролол</span><span class="pill dhp">амлодипин</span></span> + <span class="pill raas">рамиприл</span></span></div>
+      <div class="grp"><span>Группа 2, n=31</span><span><span class="pill bab">БАБ</span> + <span class="pill dhp">ДГП-БКК</span> + <span class="pill raas">иАПФ</span><br><span class="ph" style="font-size:16px">молекулы — уточнить по полному тексту</span></span></div>
+      <div style="border-top:2px solid var(--blue); margin-top:14px; padding-top:12px; font-size:20px; font-weight:700; text-align:center">Приступы стенокардии в неделю, исходно → 12 недель</div>
+      <div class="res">
+        <div><div class="lbl">Фиксированная схема</div><div class="big">3,83 → 0,20</div></div>
+        <div><div class="lbl">Свободная схема</div><div class="big grey">4,29 → 1,03</div></div>
+      </div>
+      <p class="small">АД через 12 недель сопоставимо: 125/79 и 127/78 мм рт. ст.</p>
+    </div>
+    <div class="stack" style="gap:16px">
+      <div class="callout" style="font-size:19.5px">Фиксированная комбинация бисопролола и амлодипина зарегистрирована для лечения АГ (замещение монокомпонентов в тех же дозах). <b>Данные получены у пациентов с АГ, стабильной стенокардией II–III ФК и метаболическим синдромом</b></div>
+      <div class="note" style="font-size:19.5px">Сравнивались фиксированная и свободная тройка, а не способы фиксации. Межгрупповое сравнение: <span class="ph">p — уточнить по полному тексту</span></div>
+    </div>
+  </div>
+  <div class="foot"><span>1. Скибицкий В.В. и соавт. Эффективность фиксированной комбинации бисопролола и амлодипина у пациентов с артериальной гипертонией, ишемической болезнью сердца и метаболическим синдромом. Системные гипертензии. 2015;12(1):26–31. doi:10.26442/SG29086</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide" id="s6">
+  <span class="tag">Черновик v2 · адборд · не для полевого использования</span>
+  <h1>Положения для обсуждения: у какого пациента рационально фиксировать антиангинальную пару</h1>
+  <div class="crit">
+    <ol>
+      <li><b>Ведущая задача.</b> ИБС подтверждена; ведущая проблема — стенокардия напряжения или её эквиваленты (одышка напряжения) с подтверждённым ишемическим генезом¹</li>
+      <li><b>Нужен БАБ.</b> ЧСС выше антиангинальной цели, перенесённый ИМ или ФП</li>
+      <li><b>Нужен ДГП-БКК.</b> Сопутствующая АГ¹ ³ или подозрение на вазомоторный компонент: при необходимости БАБ — сочетать с ДГП-БКК и/или нитратами¹</li>
+      <li><b>Показание к паре.</b> III–IV ФК — пара сразу (КР, I C) или II ФК без контроля на монотерапии (ESC, IIa B; КР, табл. ПА3-5)¹ ²</li>
+      <li><b>Дозы и переносимость.</b> Дозы подобраны на монокомпонентах и совпадают с дозировками FDC; нет значимых отёков; ЧСС в допустимом диапазоне</li>
+      <li><b>Блокатор РААС.</b> Нужен по своим показаниям, и важна свобода его молекулы и дозы — или противопоказан либо не переносится</li>
+    </ol>
+    <div class="dark qs">
+      <h3>Вопросы совету</h3>
+      <ul>
+        <li>Какие критерии лишние, каких не хватает?</li>
+        <li>Какой критерий главный — без него фиксация пары не имеет смысла?</li>
+        <li>Где граница между «ведущая задача — стенокардия» и «ведущая задача — АГ»?</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot">
+    <span>Положения выходят за пределы зарегистрированных показаний FDC бисопролол + амлодипин (АГ, замещение монокомпонентов). Материал для научной дискуссии</span>
+    <span>1. Барбараш О.Л. и соавт. Стабильная ИБС. КР 2024. РКЖ. 2024;29(9):6110 · 2. Vrints C, et al. Eur Heart J. 2024;45:3415–3537 · 3. Кобалава Ж.Д. и соавт. АГ у взрослых. КР 2024. РКЖ. 2024;29(9):6117</span>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" id="s7">
+  <span class="tag">Черновик v2 · адборд · не для полевого использования</span>
+  <h1>Фиксация антиангинальной пары не нужна, если ведущая задача&nbsp;— не стенокардия или пара не переносится</h1>
+  <div class="notA">
+    <div>
+      <div class="colhead">Когда не вариант А</div>
+      <ul class="no">
+        <li><b>АГ без стенокардии и её эквивалентов</b> → FDC с блокатором РААС по КР АГ 2024³</li>
+        <li><b>Контроль и приверженность на свободной комбинации достигнуты</b> → перевод не обязателен³</li>
+        <li><b>Антиангинальная цель достигается только при ЧСС &lt;60</b> → ограничение инструкции FDC (ЧСС &lt;60 — противопоказание)</li>
+        <li><b>ХСН со сниженной ФВ, декомпенсация, неишемическая ХСН III–IV ФК NYHA</b></li>
+        <li><b>Изолированная вазоспастическая стенокардия</b> → БКК (ESC, I A)²; БАБ не используются¹</li>
+        <li><b>Значимые отёки на амлодипине</b></li>
+        <li><b>Дозы вне дозировок FDC</b> (например, бисопролол 2,5 или 7,5 мг)</li>
+        <li><b>Нестабильная стенокардия; обструкция выносящего тракта ЛЖ</b></li>
+      </ul>
+    </div>
+    <div class="unk">
+      <h3>Чего мы не знаем</h3>
+      <ul>
+        <li>Прямых сравнений вариантов фиксации А, Б и В нет</li>
+        <li>Влияет ли способ фиксации на приверженность антиангинальной терапии и частоту приступов, не изучено</li>
+        <li>Как трактовать ограничение по ЧСС при антиангинальной цели 55–60 уд/мин</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot">
+    <span>1. Барбараш О.Л. и соавт. Стабильная ИБС. КР 2024. РКЖ. 2024;29(9):6110 · 2. Vrints C, et al. Eur Heart J. 2024;45:3415–3537 · 3. Кобалава Ж.Д. и соавт. АГ у взрослых. КР 2024. РКЖ. 2024;29(9):6117</span>
+  </div>
+</section>
+
+<!-- B1 -->
+<section class="slide" id="b1">
+  <span class="tag backup">Бэкап · только по вопросу из зала · решение по использованию за Евгением</span>
+  <h1>Инструкция FDC бисопролол + амлодипин: показание — АГ, антиангинальная фармакология описана</h1>
+  <div class="quotes">
+    <div class="card top"><span class="src">4.1 · Показания</span><p>«артериальная гипертензия: замещение терапии монокомпонентными препаратами амлодипина и бисопролола в тех же дозах»</p></div>
+    <div class="card top"><span class="src">4.3 · Противопоказания</span><p>«выраженная брадикардия (частота сердечных сокращений (ЧСС) менее 60 ударов/мин)»</p></div>
+    <div class="card top"><span class="src">4.5 · Взаимодействия</span><p>«У пациентов со стабильной стенокардией амлодипин можно комбинировать с другими антиангинальными средствами, например, с нитратами пролонгированного или короткого действия, бета-адреноблокаторами»</p></div>
+    <div class="card top"><span class="src">5.1 · Фармакодинамика</span><p>«Данный лекарственный препарат обладает выраженными антигипертензивным и антиангинальным эффектами благодаря взаимодополняющему действию двух активных ингредиентов»</p></div>
+  </div>
+  <div class="note">Раздел 5.1 описывает фармакологию и <b>не расширяет показания</b></div>
+  <div class="foot"><span>ОХЛП Конкор® АМ (бисопролол + амлодипин), ЛП-№(012650)-(РГ-RU) от 28.11.2025</span></div>
+</section>
+
+<!-- B2 -->
+<section class="slide" id="b2">
+  <span class="tag backup">Бэкап</span>
+  <h1>Добавление БКК к БАБ уменьшало частоту приступов в метаанализе дополнительной антиангинальной терапии</h1>
+  <p class="sub">Belsey et al., 2015¹ · систематический обзор и метаанализ РКИ · 46 исследований · стабильная стенокардия без контроля на монотерапии</p>
+  <table class="bl">
+    <thead><tr><th>Схема</th><th>Частота приступов</th><th>Время до приступа на нагрузке</th><th>Время до депрессии ST</th></tr></thead>
+    <tbody>
+      <tr><td><b>БАБ → + БКК</b></td><td>относительное снижение 0,21 (p=0,002)</td><td>SMD 0,30 (p&lt;0,0001)</td><td>незначимо</td></tr>
+      <tr><td>БАБ → + ивабрадин (1 исследование)</td><td>незначимо</td><td>SMD 0,18 (p&lt;0,0001)</td><td>SMD 0,17 (p&lt;0,0001)</td></tr>
+    </tbody>
+  </table>
+  <div class="note">Анализ на уровне классов: БКК не только дигидропиридиновые, молекулы не выделены. Размеры эффекта скромные. Финансирование — A. Menarini</div>
+  <div class="foot"><span>SMD — стандартизированная разность средних</span><span>1. Belsey J, et al. Relative efficacy of antianginal drugs used as add-on therapy in patients with stable angina: a systematic review and meta-analysis. Eur J Prev Cardiol. 2015;22(7):837–848. doi:10.1177/2047487314533217</span></div>
+</section>
+
+</body>
+</html>
